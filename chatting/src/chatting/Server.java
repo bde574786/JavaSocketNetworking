@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -23,6 +25,12 @@ public class Server extends JFrame implements ActionListener  {
 	private JTextField portTextField;
 	private JButton serverStartButton;
 	private JButton serverStopButton;
+	
+	
+	// 네트워크 자원
+	private ServerSocket serverSocket;
+	private Socket socket;
+	private int port;
 	
 	public Server() {
 		init();
@@ -79,14 +87,57 @@ public class Server extends JFrame implements ActionListener  {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == serverStartButton) {
+			startNetwork();
 			System.out.println("serverStartButton Click");
 			} else if (e.getSource() == serverStopButton) {
 				System.out.println("serverStopButton");
 			}
 		}
+	
+	
+	private void startNetwork() {
+		if(portTextField.getText().length() == 0) {
+			System.out.println("값을 입력 하세요");
+		} else if (portTextField.getText().length() != 0) {
+			port = Integer.parseInt(portTextField.getText());
+		}
 		
+		try {
+			serverSocket = new ServerSocket(port);
+			textArea.append("서버를 시작합니다.\n");
+			connect();
+			portTextField.setEditable(false);
+			serverStartButton.setEnabled(false);
+			serverStopButton.setEnabled(true);
+		} catch (Exception e) {
+			
+		}
+	}
 	
 	
+	private void connect() {
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while(true) {
+					try {
+						textArea.append("사용자의 접속을 기다립니다\n");
+						socket = serverSocket.accept();
+						textArea.append("클라이언트 접속 성공!\n");
+						System.out.println("사용자 소켓 접속" + socket);
+					} catch (Exception e) {
+						System.out.println("server client socket exception");
+						textArea.append("서버가 중지됨! 다시 스타트 버틀을 눌러주세요\n");
+						break;
+					}
+				}
+					
+			}
+		});
+		thread.start();
+	}
+	
+		
 	public static void main(String[] args) {
 		new Server();
 	}
