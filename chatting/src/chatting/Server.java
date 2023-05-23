@@ -2,6 +2,8 @@ package chatting;
 
 import java.awt.Color;
 import java.awt.ScrollPane;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -11,7 +13,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
-public class Server extends JFrame  {
+public class Server extends JFrame implements ActionListener  {
 
 	// GUI 자원
 	private JPanel mainPanel;
@@ -24,7 +26,7 @@ public class Server extends JFrame  {
 	
 	public Server() {
 		init();
-		portTextField.requestFocus();
+		addListener();
 	}
 	
 	private void init() {
@@ -46,7 +48,6 @@ public class Server extends JFrame  {
 		textArea.setEditable(false);
 		serverInfoScroll.add(textArea);
 		
-
 		portLabel = new JLabel("포트번호 :");
 		portLabel.setBounds(12, 273, 82, 15);
 		mainPanel.add(portLabel);
@@ -62,15 +63,33 @@ public class Server extends JFrame  {
 
 		serverStopButton = new JButton("서버중지");
 		serverStopButton.setBounds(168, 315, 154, 23);
-		mainPanel.add(serverStopButton);
 		serverStopButton.setEnabled(false);
+		mainPanel.add(serverStopButton);
 
 		setVisible(true);
 		
 	}
+
+	private void addListener() {
+		portTextField.requestFocus();
+		serverStartButton.addActionListener(this);
+		serverStopButton.addActionListener(this);
+	}
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == serverStartButton) {
+			System.out.println("serverStartButton Click");
+			} else if (e.getSource() == serverStopButton) {
+				System.out.println("serverStopButton");
+			}
+		}
+		
+	
 	
 	public static void main(String[] args) {
 		new Server();
 	}
+
 	
 }

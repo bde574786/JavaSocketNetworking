@@ -1,6 +1,9 @@
 package chatting;
 
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.net.Socket;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -16,7 +19,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 
-public class Client extends JFrame{
+public class Client extends JFrame implements ActionListener{
 
 	
 		// 메인 패널
@@ -33,7 +36,7 @@ public class Client extends JFrame{
 		private JLabel serverPortLabel;
 		private JLabel userIDLabel;
 		private JTextField hostIPTextField;
-		private JTextField serverportTextField;
+		private JTextField serverPortTextField;
 		private JTextField userIDTextField;
 		private JButton connectButton;
 		
@@ -53,7 +56,7 @@ public class Client extends JFrame{
 		private JScrollPane chattingScroll;
 		private JTextArea viewChatTextArea;
 		private JTextField chattingTextField;
-		private JButton sendMessage;
+		private JButton sendMessageButton;
 
 		
 		// 탭 외 버튼
@@ -62,9 +65,18 @@ public class Client extends JFrame{
 		private JButton endButton;
 		
 		
+		// 네트워크
+		private Socket socket;
+		private String ip;
+		private int port;
+		private String userID;
+		
 		
 		public Client() {
 			init();
+			serverPortTextField.setText("1");
+			userIDTextField.setText("user1");
+			addListener();
 		}
 
 		private void init() {
@@ -106,11 +118,11 @@ public class Client extends JFrame{
 			serverPortLabel.setBounds(12, 72, 91, 15);
 			loginPanel.add(serverPortLabel);
 			
-			serverportTextField = new JTextField();
-			serverportTextField.setFont(new Font("휴먼모음T", Font.BOLD, 13));
-			serverportTextField.setBounds(112, 69, 199, 21);
-			serverportTextField.setColumns(10);
-			loginPanel.add(serverportTextField);
+			serverPortTextField = new JTextField();
+			serverPortTextField.setFont(new Font("휴먼모음T", Font.BOLD, 13));
+			serverPortTextField.setBounds(112, 69, 199, 21);
+			serverPortTextField.setColumns(10);
+			loginPanel.add(serverPortTextField);
 
 			
 			userIDLabel = new JLabel("User_ID");
@@ -197,10 +209,10 @@ public class Client extends JFrame{
 			chattingTextField.setColumns(10);
 			chattingPanel.add(chattingTextField);
 
-			sendMessage = new JButton("전 송");
-			sendMessage.setFont(new Font("휴먼모음T", Font.BOLD, 12));
-			sendMessage.setBounds(226, 346, 97, 23);
-			chattingPanel.add(sendMessage);
+			sendMessageButton = new JButton("전 송");
+			sendMessageButton.setFont(new Font("휴먼모음T", Font.BOLD, 12));
+			sendMessageButton.setBounds(226, 346, 97, 23);
+			chattingPanel.add(sendMessageButton);
 
 			chattingScroll = new JScrollPane();
 			chattingScroll.setEnabled(false);
@@ -230,8 +242,43 @@ public class Client extends JFrame{
 
 		}
 		
+		private void addListener() {
+			connectButton.addActionListener(this);
+			sendMessageButton.addActionListener(this);
+			sendNoteButton.addActionListener(this);
+			joinRoomButton.addActionListener(this);
+			chattingTextField.addActionListener(this);
+			endButton.addActionListener(this);
+			makeRoomButton.addActionListener(this);
+			leaveRoomButton.addActionListener(this);
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (e.getSource() == connectButton) {
+				System.out.println("connectButton Click");
+			} else if (e.getSource() == sendNoteButton) {
+				System.out.println("sendMessageButton Click");
+			} else if (e.getSource() == sendMessageButton) {
+				System.out.println("sendMessageButton Click");
+			} else if (e.getSource() == joinRoomButton) {
+				System.out.println("joinRoomButton Click");
+			} else if (e.getSource() == makeRoomButton) {
+				System.out.println("makeRoomButton Click");
+			} else if (e.getSource() == leaveRoomButton) {
+				System.out.println("leaveRoomButton Click");
+			} else if (e.getSource() == endButton) {
+				System.exit(0);
+			}
+			
+			
+		}
+		
+		
+		
 		public static void main(String[] args) {
 			new Client();
 		}
+
 		
 }
