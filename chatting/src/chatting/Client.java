@@ -20,6 +20,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -275,7 +276,17 @@ public class Client extends JFrame implements ActionListener {
 			}
 
 		} else if (e.getSource() == sendNoteButton) {
-			System.out.println("sendMessageButton Click");
+			System.out.println("쪽지보내기버튼 Click");
+			String user = (String) totalUserList.getSelectedValue();
+			if (user == null) {
+				JOptionPane.showMessageDialog(null, "대상을 선택하세요", "알림", JOptionPane.ERROR_MESSAGE);
+			}
+			String note = JOptionPane.showInputDialog("보낼메시지");
+			if (note != null) {
+				System.out.println("note : " + note);
+				sendMessage("Note/" + user + "@" + note);
+			}
+
 		} else if (e.getSource() == sendMessageButton) {
 			System.out.println("sendMessageButton Click");
 		} else if (e.getSource() == joinRoomButton) {
@@ -295,8 +306,6 @@ public class Client extends JFrame implements ActionListener {
 			socket = new Socket(ip, port);
 			network();
 		} catch (Exception e) {
-			//System.out.println("client create socket exception");
-			System.out.println(e);
 		}
 	}
 
@@ -320,7 +329,6 @@ public class Client extends JFrame implements ActionListener {
 							String message = dataInputStream.readUTF();
 							inMessage(message);
 						} catch (Exception e) {
-							System.out.println("network exception");
 						}
 					}
 
@@ -342,18 +350,15 @@ public class Client extends JFrame implements ActionListener {
 		if (protocol.equals("NewUser")) {
 			userVectorList.add(message);
 			totalUserList.setListData(userVectorList);
-			System.out.println(str);
-			for (int i = 0; i < userVectorList.size(); i++) {
-				System.out.println("NewUserProtocol : "+ userVectorList.elementAt(i) + "\n");
-			}
 
 		} else if (protocol.equals("OldUser")) {
 			userVectorList.add(message);
 			totalUserList.setListData(userVectorList);
-			System.out.println(str);
-			for (int i = 0; i < userVectorList.size(); i++) {
-				System.out.println("OldUserProtocol : "+ userVectorList.elementAt(i) + "\n");
-			}
+		} else if (protocol.equals("Note")) {
+			stringTokenizer = new StringTokenizer(message, "@");
+			String user = stringTokenizer.nextToken();
+			String note = stringTokenizer.nextToken();
+			JOptionPane.showMessageDialog(null, note, user + "로 부터 온 메시지", JOptionPane.CLOSED_OPTION);
 		}
 	}
 

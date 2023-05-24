@@ -12,6 +12,7 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -53,11 +54,9 @@ public class Server extends JFrame implements ActionListener {
 		mainPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		mainPanel.setLayout(null);
 		setContentPane(mainPanel);
-
 		serverInfoScroll = new ScrollPane();
 		serverInfoScroll.setBounds(10, 10, 309, 229);
 		mainPanel.add(serverInfoScroll);
-
 		textArea = new JTextArea();
 		textArea.setBounds(12, 11, 310, 230);
 		textArea.setBackground(Color.WHITE);
@@ -130,7 +129,6 @@ public class Server extends JFrame implements ActionListener {
 						textArea.append("사용자의 접속을 기다립니다\n");
 						socket = serverSocket.accept();
 						textArea.append("클라이언트 접속 성공!\n");
-						System.out.println("사용자 소켓 접속" + socket);
 
 						UserInformation userInfo = new UserInformation(socket);
 						userInfo.start();
@@ -189,6 +187,36 @@ public class Server extends JFrame implements ActionListener {
 			}
 		}
 
+		@Override
+		public void run() {
+			try {
+				String message = dataInputStream.readUTF();
+				textArea.append("[[" + userId + "]]" + message + "\n");
+				inMessage(message);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
+		}
+
+		private void inMessage(String str) {
+			StringTokenizer stringTokenizer = new StringTokenizer(str, "/");
+
+			String protocol = stringTokenizer.nextToken();
+			String message = stringTokenizer.nextToken();
+			if (protocol.equals("Note")) {
+				stringTokenizer = new StringTokenizer(message, "@");
+				String user = stringTokenizer.nextToken();
+				String note = stringTokenizer.nextToken();
+
+				for (int i = 0; i < userVectorList.size(); i++) {
+					UserInformation userInfo = userVectorList.elementAt(i);
+					if (userInfo.userId.equals(user)) {
+						userInfo.sendMessage("Note/" + userId + "@" + note);
+					}
+				}
+			}
+		}
+
 		private void sendMessage(String message) {
 			try {
 				dataOutputStream.writeUTF(message);
@@ -198,6 +226,7 @@ public class Server extends JFrame implements ActionListener {
 				e.printStackTrace();
 			}
 		}
+
 	}
 
 	public void broadcast(String string) {
