@@ -96,9 +96,21 @@ public class Server extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == serverStartButton) {
 			startNetwork();
-			System.out.println("serverStartButton Click");
+			portTextField.setEnabled(false);
+			serverStartButton.setEnabled(false);
+			serverStopButton.setEnabled(true);
 		} else if (e.getSource() == serverStopButton) {
-			System.out.println("serverStopButton");
+			try {
+				serverSocket.close();
+				userVectorList.removeAllElements();
+				roomVectorList.removeAllElements();
+				portTextField.setEnabled(true);
+				serverStartButton.setEnabled(true);
+				serverStopButton.setEnabled(false);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		}
 	}
 

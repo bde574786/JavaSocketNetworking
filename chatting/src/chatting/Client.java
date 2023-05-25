@@ -346,7 +346,7 @@ public class Client extends JFrame implements ActionListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		connectButton.setEnabled(false);
 	}
 
 	private void inMessage(String str) {
