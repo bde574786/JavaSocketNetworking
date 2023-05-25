@@ -167,9 +167,9 @@ public class Server extends JFrame implements ActionListener {
 				outputStream = userSocket.getOutputStream();
 				dataOutputStream = new DataOutputStream(outputStream);
 
+				sendMessage("NetworkConnected/ok");
 				userId = dataInputStream.readUTF();
 				textArea.append("[" + userId + "] 입장\n");
-
 				broadcast("NewUser/" + userId);
 
 				for (int i = 0; i < userVectorList.size(); i++) {

@@ -64,7 +64,7 @@ public class Client extends JFrame implements ActionListener {
 	private JButton sendMessageButton;
 
 	// 탭 외 버튼
-	private JButton makeRoomButton;
+	private JButton createRoomButton;
 	private JButton leaveRoomButton;
 	private JButton endButton;
 
@@ -221,10 +221,11 @@ public class Client extends JFrame implements ActionListener {
 //////////////////////////////////////////////////////////////////////////	
 
 		// 탭 외 버튼
-		makeRoomButton = new JButton("방 만들기");
-		makeRoomButton.setFont(new Font("휴먼모음T", Font.BOLD, 11));
-		makeRoomButton.setBounds(352, 93, 97, 23);
-		mainPanel.add(makeRoomButton);
+		createRoomButton = new JButton("방 만들기");
+		createRoomButton.setFont(new Font("휴먼모음T", Font.BOLD, 11));
+		createRoomButton.setBounds(352, 93, 97, 23);
+		createRoomButton.setEnabled(false);
+		mainPanel.add(createRoomButton);
 
 		leaveRoomButton = new JButton("방 나가기");
 		leaveRoomButton.setFont(new Font("휴먼모음T", Font.BOLD, 12));
@@ -248,7 +249,7 @@ public class Client extends JFrame implements ActionListener {
 		joinRoomButton.addActionListener(this);
 		chattingTextField.addActionListener(this);
 		endButton.addActionListener(this);
-		makeRoomButton.addActionListener(this);
+		createRoomButton.addActionListener(this);
 		leaveRoomButton.addActionListener(this);
 	}
 
@@ -293,7 +294,7 @@ public class Client extends JFrame implements ActionListener {
 			System.out.println("sendMessageButton Click");
 		} else if (e.getSource() == joinRoomButton) {
 			System.out.println("joinRoomButton Click");
-		} else if (e.getSource() == makeRoomButton) {
+		} else if (e.getSource() == createRoomButton) {
 			String roomName = JOptionPane.showInputDialog("방 이름을 입력하세요");
 			if (roomName != null) {
 				sendMessage("CreateRoom/" + roomName);
@@ -360,6 +361,8 @@ public class Client extends JFrame implements ActionListener {
 		} else if (protocol.equals("OldUser")) {
 			userVectorList.add(message);
 			totalUserList.setListData(userVectorList);
+		} else if (protocol.equals("NetworkConnected")) {
+			createRoomButton.setEnabled(socket.isConnected());
 		} else if (protocol.equals("Note")) {
 			stringTokenizer = new StringTokenizer(message, "@");
 			String user = stringTokenizer.nextToken();
@@ -371,7 +374,7 @@ public class Client extends JFrame implements ActionListener {
 			myRoomName = message;
 			joinRoomButton.setEnabled(false);
 			leaveRoomButton.setEnabled(true);
-			makeRoomButton.setEnabled(false);
+			createRoomButton.setEnabled(false);
 		} else if (protocol.equals("NewRoom")) {
 			roomVectorList.add(message);
 			totalRoomList.setListData(roomVectorList);
