@@ -249,6 +249,25 @@ public class Server extends JFrame implements ActionListener {
 					broadcast("NewRoom/" + message);
 				}
 
+			} else if (protocol.equals("JoinRoom")) {
+				for (int i = 0; i < roomVectorList.size(); i++) {
+					RoomInformation roomInfo = roomVectorList.elementAt(i);
+					if(roomInfo.roomName.equals(message)) {
+						roomInfo.roomBroadcast("Chatting/[[알림]]/(((" + userId + " 입장))) ");
+						roomInfo.addUser(this);
+						sendMessage("JoinRoom/"  + message);
+					}
+				}
+				
+			} else if (protocol.equals("LeaveRoom")) {
+				for (int i = 0; i < roomVectorList.size(); i++) {
+					RoomInformation roomInfo = roomVectorList.elementAt(i);
+					if(roomInfo.roomName.equals(message)) {
+						roomInfo.removeRoom(this);
+						sendMessage("LeaveRoom/ok");
+						break;
+					}
+				}
 			}
 		}
 
@@ -285,6 +304,33 @@ public class Server extends JFrame implements ActionListener {
 //				userInfo.sendMessage(str);
 //			}
 //		}
+
+		public void roomBroadcast(String string) {
+				for (int i = 0; i < roomUserVectorList.size(); i++) {
+					UserInformation userInfo = roomUserVectorList.elementAt(i);
+					userInfo.sendMessage(string);
+				}
+		}
+
+		private void addUser(UserInformation userInfo) {
+			roomUserVectorList.add(userInfo);
+		}
+		
+		private void removeRoom(UserInformation userInfo) {
+			System.out.println("remove room");
+			roomUserVectorList.remove(userInfo);
+			boolean empty = roomUserVectorList.isEmpty();
+			if (empty) {
+				for (int i = 0; i < roomVectorList.size(); i++) {
+					RoomInformation roomInfo = roomVectorList.elementAt(i);
+					if (roomInfo.roomName.equals(roomName)) {
+						roomVectorList.remove(this);
+						broadcast("EmptyRoom/" + roomName);
+						break;
+					}
+				}
+			}
+		}
 
 	}
 

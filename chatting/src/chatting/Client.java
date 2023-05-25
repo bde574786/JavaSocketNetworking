@@ -195,14 +195,14 @@ public class Client extends JFrame implements ActionListener {
 		chattingPanel.setLayout(null);
 		mainTab.addTab("채팅", null, chattingPanel, null);
 
-		viewChatTextArea = new JTextArea("viewChatTextArea");
+		viewChatTextArea = new JTextArea();
 		viewChatTextArea.setEnabled(false);
 		viewChatTextArea.setEditable(false);
 		viewChatTextArea.setFont(new Font("휴먼모음T", Font.BOLD, 12));
 		viewChatTextArea.setBounds(0, 0, 323, 337);
 		chattingPanel.add(viewChatTextArea);
 
-		chattingTextField = new JTextField("chattingTextField");
+		chattingTextField = new JTextField();
 		chattingTextField.setFont(new Font("휴먼모음T", Font.BOLD, 11));
 		chattingTextField.setBounds(0, 347, 214, 21);
 		chattingTextField.setColumns(10);
@@ -291,9 +291,13 @@ public class Client extends JFrame implements ActionListener {
 			}
 
 		} else if (e.getSource() == sendMessageButton) {
+
 			System.out.println("sendMessageButton Click");
 		} else if (e.getSource() == joinRoomButton) {
-			System.out.println("joinRoomButton Click");
+			String joinRoom = (String) totalRoomList.getSelectedValue();
+			leaveRoomButton.setEnabled(true);
+			createRoomButton.setEnabled(false);
+			sendMessage("JoinRoom/" + joinRoom);
 		} else if (e.getSource() == createRoomButton) {
 			String roomName = JOptionPane.showInputDialog("방 이름을 입력하세요");
 			if (roomName != null) {
@@ -301,7 +305,13 @@ public class Client extends JFrame implements ActionListener {
 			}
 			System.out.println("makeRoomButton Click");
 		} else if (e.getSource() == leaveRoomButton) {
-			System.out.println("leaveRoomButton Click");
+			sendMessage("LeaveRoom/" + myRoomName);
+			if (roomVectorList.size() != 0) {
+				joinRoomButton.setEnabled(true);
+			} else {
+				joinRoomButton.setEnabled(false);
+			}
+
 		} else if (e.getSource() == endButton) {
 			System.exit(0);
 		}
@@ -380,6 +390,24 @@ public class Client extends JFrame implements ActionListener {
 			totalRoomList.setListData(roomVectorList);
 		} else if (protocol.equals("OldRoom")) {
 			roomVectorList.add(message);
+			totalRoomList.setListData(roomVectorList);
+			
+		} else if (protocol.equals("JoinRoom")) {
+			myRoomName = message;
+			JOptionPane.showMessageDialog(null, "채팅방 (  " + myRoomName + " ) 에 입장완료", "알림",
+					JOptionPane.INFORMATION_MESSAGE);
+			joinRoomButton.setEnabled(false);
+			viewChatTextArea.setText("");
+		} else if (protocol.equals("Chatting")) {
+			String msg = stringTokenizer.nextToken();
+			viewChatTextArea.append(message + " : " + msg + "\n");
+		} else if (protocol.equals("LeaveRoom")) {
+			viewChatTextArea.append("*** (( " + myRoomName + "에서 퇴장 ))***\n");
+			// myRoomName = null;
+			createRoomButton.setEnabled(true);
+			leaveRoomButton.setEnabled(false);
+		} else if (protocol.equals("EmptyRoom")) {
+			roomVectorList.remove(message);
 			totalRoomList.setListData(roomVectorList);
 		}
 	}
