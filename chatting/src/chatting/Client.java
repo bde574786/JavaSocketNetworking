@@ -79,6 +79,8 @@ public class Client extends JFrame implements ActionListener {
 	private DataOutputStream dataOutputStream;
 
 	private Vector<String> userVectorList = new Vector<String>();
+	private Vector<String> roomVectorList = new Vector<String>();
+	private String myRoomName;
 
 	public Client() {
 		init();
@@ -292,6 +294,10 @@ public class Client extends JFrame implements ActionListener {
 		} else if (e.getSource() == joinRoomButton) {
 			System.out.println("joinRoomButton Click");
 		} else if (e.getSource() == makeRoomButton) {
+			String roomName = JOptionPane.showInputDialog("방 이름을 입력하세요");
+			if (roomName != null) {
+				sendMessage("CreateRoom/" + roomName);
+			}
 			System.out.println("makeRoomButton Click");
 		} else if (e.getSource() == leaveRoomButton) {
 			System.out.println("leaveRoomButton Click");
@@ -359,6 +365,19 @@ public class Client extends JFrame implements ActionListener {
 			String user = stringTokenizer.nextToken();
 			String note = stringTokenizer.nextToken();
 			JOptionPane.showMessageDialog(null, note, user + "로 부터 온 메시지", JOptionPane.CLOSED_OPTION);
+		} else if (protocol.equals("CreateRoomFail")) {
+			JOptionPane.showMessageDialog(null, "같은 방 이름이 존재합니다.", "알림", JOptionPane.ERROR_MESSAGE);
+		} else if (protocol.equals("CreateRoom")) {
+			myRoomName = message;
+			joinRoomButton.setEnabled(false);
+			leaveRoomButton.setEnabled(true);
+			makeRoomButton.setEnabled(false);
+		} else if (protocol.equals("NewRoom")) {
+			roomVectorList.add(message);
+			totalRoomList.setListData(roomVectorList);
+		} else if (protocol.equals("OldRoom")) {
+			roomVectorList.add(message);
+			totalRoomList.setListData(roomVectorList);
 		}
 	}
 

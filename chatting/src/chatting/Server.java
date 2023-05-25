@@ -40,6 +40,7 @@ public class Server extends JFrame implements ActionListener {
 	private int port;
 
 	private Vector<UserInformation> userVectorList = new Vector<UserInformation>();
+	private Vector<RoomInformation> roomVectorList = new Vector<RoomInformation>();
 
 	public Server() {
 		init();
@@ -132,9 +133,8 @@ public class Server extends JFrame implements ActionListener {
 
 						UserInformation userInfo = new UserInformation(socket);
 						userInfo.start();
-
-					} catch (Exception e) {
-						textArea.append("서버가 중지됨! 다시 스타트 버틀을 눌러주세요\n");
+					} catch (IOException e) {
+						textArea.append("서버가 중지됨! 다시 스타트 버튼을 눌러주세요\n");
 						break;
 					}
 				}
@@ -177,24 +177,29 @@ public class Server extends JFrame implements ActionListener {
 					sendMessage("OldUser/" + userInfo.userId);
 				}
 
-				// TODO room
+				for (int i = 0; i < roomVectorList.size(); i++) {
+					RoomInformation room = roomVectorList.elementAt(i);
+					sendMessage("OldRoom/" + room.roomName);
+				}
 
 				userVectorList.add(this);
 
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.out.println(e);
 			}
 		}
 
 		@Override
 		public void run() {
-			try {
-				String message = dataInputStream.readUTF();
-				textArea.append("[[" + userId + "]]" + message + "\n");
-				inMessage(message);
-			} catch (Exception e) {
-				// TODO: handle exception
+			while (true) {
+				try {
+					String message = dataInputStream.readUTF();
+					textArea.append("[[" + userId + "]]" + message + "\n");
+					inMessage(message);
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+
 			}
 		}
 
@@ -214,6 +219,24 @@ public class Server extends JFrame implements ActionListener {
 						userInfo.sendMessage("Note/" + userId + "@" + note);
 					}
 				}
+			} else if (protocol.equals("CreateRoom")) {
+				for (int i = 0; i < roomVectorList.size(); i++) {
+					RoomInformation room = roomVectorList.elementAt(i);
+					if (room.roomName.equals(message)) {
+						sendMessage("CreateRoomFail/ok");
+						roomCheck = false;
+						break;
+					} else {
+						roomCheck = true;
+					}
+				}
+				if (roomCheck == true) {
+					RoomInformation newRoom = new RoomInformation(message, this);
+					roomVectorList.add(newRoom);
+					sendMessage("CreateRoom/" + message);
+					broadcast("NewRoom/" + message);
+				}
+
 			}
 		}
 
@@ -226,6 +249,30 @@ public class Server extends JFrame implements ActionListener {
 				e.printStackTrace();
 			}
 		}
+
+	}
+
+	class RoomInformation {
+
+		private String roomName;
+		private Vector<UserInformation> roomUserVectorList = new Vector<UserInformation>();
+
+		public RoomInformation(String roomName, UserInformation userInfo) {
+			this.roomName = roomName;
+			this.roomUserVectorList.add(userInfo);
+			userInfo.currentRoomName = roomName;
+		}
+
+//		private void addUser(UserInformation userInfo) {
+//			roomUserVectorList.add(userInfo);
+//		}
+
+		// private void roomBroadcast(String str) {
+//			for (int i = 0; i < roomUserVectorList.size(); i++) {
+//				UserInformation userInfo = roomUserVectorList.elementAt(i);
+//				userInfo.sendMessage(str);
+//			}
+//		}
 
 	}
 
