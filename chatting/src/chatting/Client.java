@@ -6,6 +6,8 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.DataInputStream;
@@ -36,7 +38,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-public class Client extends JFrame implements ActionListener {
+public class Client extends JFrame implements ActionListener, KeyListener {
 
 	// 메인 패널
 	private JPanel mainPanel;
@@ -69,7 +71,8 @@ public class Client extends JFrame implements ActionListener {
 	private JButton sendMessageButton;
 	private JButton leaveRoomButton;
 	private JButton backButton;
-
+	private ImageIcon backbuttonImageIcon;
+	private ImageIcon coloredIcon;
 	// 네트워크
 	private Socket socket;
 	private String ip;
@@ -269,8 +272,12 @@ public class Client extends JFrame implements ActionListener {
 		leaveRoomButton.setForeground(new Color(15, 64, 41));
 		chattingPanel.add(leaveRoomButton);
 
-		backButton = new JButton(new ImageIcon("images/arrow.png"));
-		backButton.setBounds(10, 22, 40, 40);
+		backbuttonImageIcon = new ImageIcon("images/arrow.png");
+		coloredIcon = new ImageIcon("images/coloredArrow.png");
+
+		backButton = new JButton(backbuttonImageIcon);
+
+		backButton.setBounds(10, 21, 30, 30);
 		// backButton.setOpaque(false);
 		backButton.setBorderPainted(false);
 		backButton.setContentAreaFilled(false);
@@ -290,40 +297,42 @@ public class Client extends JFrame implements ActionListener {
 		joinRoomButton.addActionListener(this);
 		enterRoomButton.addActionListener(this);
 		chattingTextField.addActionListener(this);
+		chattingTextField.addKeyListener(this);
 		createRoomButton.addActionListener(this);
 		leaveRoomButton.addActionListener(this);
 		backButton.addMouseListener(new MouseListener() {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				backButton.setContentAreaFilled(false);
-
+				backButton.setIcon(coloredIcon);
+				chattingPanel.setVisible(false);
+				mainPanel.add(waitingRoomPanel);
+				waitingRoomPanel.setVisible(true);
 			}
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				backButton.setContentAreaFilled(true);
-				backButton.setBackground(Color.red);
+				backButton.setIcon(coloredIcon);
 			}
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				backButton.setContentAreaFilled(false);
-
+				backButton.setIcon(backbuttonImageIcon);
 			}
 
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				backButton.setContentAreaFilled(true);
-				backButton.setBackground(Color.red);
+				backButton.setIcon(coloredIcon);
+
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				backButton.setContentAreaFilled(false);
+				backButton.setIcon(backbuttonImageIcon);
 			}
 
 		});
+
 	}
 
 	@Override
@@ -343,14 +352,21 @@ public class Client extends JFrame implements ActionListener {
 				ip = hostIPTextField.getText();
 				try {
 					port = Integer.parseInt(serverPortTextField.getText().trim());
-					loginPanel.setVisible(false);
-					mainPanel.add(waitingRoomPanel);
+					userId = userIDTextField.getText().trim();
+					try {
+						connectServer();
+						if (socket.isConnected()) {
+							loginPanel.setVisible(false);
+							mainPanel.add(waitingRoomPanel);
+							setTitle(" Welcome! [ " + userId + " ] in YouChaeTalk!!");
+						}
+					} catch (Exception e2) {
+						setTitle("서버와의 연결이 필요합니다.");
+					}
 				} catch (Exception e2) {
 					serverPortTextField.setText("잘못 입력하였습니다.");
 				}
-				userId = userIDTextField.getText().trim();
-				connectServer();
-				setTitle(" Welcome! [ " + userId + " ] in YouChaeTalk!!");
+
 			}
 
 		} else if (e.getSource() == sendNoteButton) {
@@ -380,6 +396,8 @@ public class Client extends JFrame implements ActionListener {
 		} else if (e.getSource() == enterRoomButton) {
 			waitingRoomPanel.setVisible(false);
 			mainPanel.add(chattingPanel);
+			chattingPanel.setVisible(true);
+
 		}
 
 		else if (e.getSource() == createRoomButton) {
@@ -397,6 +415,30 @@ public class Client extends JFrame implements ActionListener {
 			}
 
 		}
+
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		if (e.getKeyCode() == KeyEvent.VK_ENTER && chattingTextField.hasFocus()) {
+			if (chattingTextField.getText().length() == 0) {
+			} else {
+				sendMessage("Chatting/" + myRoomName + "/" + chattingTextField.getText());
+				chattingTextField.setText("");
+			}
+		}
+
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
 
 	}
 

@@ -68,7 +68,7 @@ public class Server extends JFrame implements ActionListener {
 		portLabel.setBounds(12, 273, 82, 15);
 		mainPanel.add(portLabel);
 
-		portTextField = new JTextField();
+		portTextField = new JTextField("1");
 		portTextField.setBounds(98, 270, 224, 21);
 		portTextField.setColumns(10);
 		mainPanel.add(portTextField);
