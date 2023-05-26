@@ -224,6 +224,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		joinRoomButton.setForeground(new Color(15, 64, 41));
 		hostIPTextField.setText("127.0.0.1");
 		waitingRoomPanel.add(joinRoomButton);
+		joinRoomButton.setEnabled(false);
 
 		createRoomButton = new JButton("+ 방 만들기");
 		createRoomButton.setFont(new Font("Dongle", Font.BOLD, 11));
@@ -331,6 +332,18 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			}
 
 		});
+        totalRoomList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    if (totalRoomList.getSelectedIndex() != -1) {
+                        joinRoomButton.setEnabled(true); // 선택된 요소가 있으면 버튼 활성화
+                    } else {
+                    	joinRoomButton.setEnabled(false); // 선택된 요소가 없으면 버튼 비활성화
+                    }
+                }
+            }
+        });
 
 	}
 

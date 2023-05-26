@@ -273,8 +273,8 @@ public class Server extends JFrame implements ActionListener {
 				for (int i = 0; i < roomVectorList.size(); i++) {
 					RoomInformation roomInfo = roomVectorList.elementAt(i);
 					if (roomInfo.roomName.equals(message)) {
-						roomInfo.roomBroadcast("Chatting/[[알림]]/(((" + userId + " 입장))) ");
 						roomInfo.addUser(this);
+						roomInfo.roomBroadcast("Chatting/[[알림]]/(((" + userId + " 입장))) ");
 						sendMessage("JoinRoom/" + message);
 					}
 				}
