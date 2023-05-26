@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.channels.NetworkChannel;
 import java.util.Iterator;
+import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -62,7 +63,6 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	private JButton sendNoteButton;
 	private JButton joinRoomButton;
 	private JButton createRoomButton;
-	private JButton enterRoomButton;
 
 	private JPanel chattingPanel;
 	private JScrollPane chattingScroll;
@@ -86,12 +86,15 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	private Vector<String> userVectorList = new Vector<String>();
 	private Vector<String> roomVectorList = new Vector<String>();
 	private String myRoomName;
-	private boolean isUserIdvalidationOK= false;
+	private boolean isUserIdvalidationOK = false;
+
+	private Stack<JPanel> panelStack = new Stack<JPanel>();
 
 	public Client() {
 		init();
 		serverPortTextField.setText("1");
 		userIDTextField.setText("user1");
+
 		// mainPanel.add(waitingRoomPanel);
 		addListener();
 	}
@@ -120,7 +123,8 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		loginPanel.setLayout(null);
 		loginPanel.setBackground(Color.white);
 		loginPanel.setBounds(0, 0, 400, 482);
-		mainPanel.add(loginPanel);
+		switchToTopPanel(loginPanel);
+		// switchPanel(loginPanel);
 
 		iconLabel = new JLabel();
 		iconLabel.setIcon(new ImageIcon("images/Icon_YouchaeTalk.png"));
@@ -218,13 +222,6 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		hostIPTextField.setText("127.0.0.1");
 		waitingRoomPanel.add(joinRoomButton);
 
-		enterRoomButton = new JButton("입장");
-		enterRoomButton.setFont(new Font("Dongle", Font.BOLD, 12));
-		enterRoomButton.setBounds(290, 395, 70, 23);
-		enterRoomButton.setBackground(new Color(255, 223, 136));
-		enterRoomButton.setForeground(new Color(15, 64, 41));
-		waitingRoomPanel.add(enterRoomButton);
-
 		createRoomButton = new JButton("+ 방 만들기");
 		createRoomButton.setFont(new Font("Dongle", Font.BOLD, 11));
 		createRoomButton.setBounds(266, 45, 102, 23);
@@ -296,7 +293,6 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		sendMessageButton.addActionListener(this);
 		sendNoteButton.addActionListener(this);
 		joinRoomButton.addActionListener(this);
-		enterRoomButton.addActionListener(this);
 		chattingTextField.addActionListener(this);
 		chattingTextField.addKeyListener(this);
 		createRoomButton.addActionListener(this);
@@ -306,9 +302,8 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				backButton.setIcon(coloredIcon);
-				chattingPanel.setVisible(false);
-				mainPanel.add(waitingRoomPanel);
-				waitingRoomPanel.setVisible(true);
+				removeTopPanel();
+				backButton.setIcon(backbuttonImageIcon);
 			}
 
 			@Override
@@ -381,20 +376,17 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		} else if (e.getSource() == sendMessageButton) {
 			System.out.println("sendMessageButton Click");
 			if (chattingTextField.getText().length() == 0) {
+				JOptionPane.showMessageDialog(null, "메세지를 입력하세요", "알림", JOptionPane.INFORMATION_MESSAGE);
 			} else {
 				sendMessage("Chatting/" + myRoomName + "/" + chattingTextField.getText());
 				chattingTextField.setText("");
 			}
 		} else if (e.getSource() == joinRoomButton) {
 			String joinRoom = (String) totalRoomList.getSelectedValue();
+			switchToTopPanel(chattingPanel);
 			leaveRoomButton.setEnabled(true);
 			createRoomButton.setEnabled(false);
 			sendMessage("JoinRoom/" + joinRoom);
-		} else if (e.getSource() == enterRoomButton) {
-			waitingRoomPanel.setVisible(false);
-			mainPanel.add(chattingPanel);
-			chattingPanel.setVisible(true);
-
 		}
 
 		else if (e.getSource() == createRoomButton) {
@@ -403,6 +395,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 				sendMessage("CreateRoom/" + roomName);
 			}
 			System.out.println("makeRoomButton Click");
+
 		} else if (e.getSource() == leaveRoomButton) {
 			sendMessage("LeaveRoom/" + myRoomName);
 			if (roomVectorList.size() != 0) {
@@ -475,7 +468,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//connectButton.setEnabled(false);
+		// connectButton.setEnabled(false);
 	}
 
 	private void inMessage(String str) {
@@ -498,16 +491,14 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		} else if (protocol.equals("NetworkConnected")) {
 			isUserIdvalidationOK = true;
 			if (isUserIdvalidationOK) {
-				loginPanel.setVisible(false);
-				mainPanel.add(waitingRoomPanel);
 				setTitle(" Welcome! [ " + userId + " ] in YouChaeTalk!!");
+				switchToTopPanel(waitingRoomPanel);
 				connectButton.setEnabled(false);
-				
 				userVectorList.add(userId);
 				totalUserList.setListData(userVectorList);
 			}
 			createRoomButton.setEnabled(socket.isConnected());
-			
+
 		} else if (protocol.equals("Note")) {
 			stringTokenizer = new StringTokenizer(message, "@");
 			String user = stringTokenizer.nextToken();
@@ -516,8 +507,9 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		} else if (protocol.equals("CreateRoomFail")) {
 			JOptionPane.showMessageDialog(null, "같은 방 이름이 존재합니다.", "알림", JOptionPane.ERROR_MESSAGE);
 		} else if (protocol.equals("CreateRoom")) {
+			sendMessage("JoinRoom/" + message);
+			switchToTopPanel(chattingPanel);
 			myRoomName = message;
-			joinRoomButton.setEnabled(false);
 			leaveRoomButton.setEnabled(true);
 			createRoomButton.setEnabled(false);
 		} else if (protocol.equals("NewRoom")) {
@@ -531,10 +523,11 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			myRoomName = message;
 			JOptionPane.showMessageDialog(null, "채팅방 (  " + myRoomName + " ) 에 입장완료", "알림",
 					JOptionPane.INFORMATION_MESSAGE);
-			joinRoomButton.setEnabled(false);
-			viewChatTextArea.setText("");
+			// joinRoomButton.setEnabled(false);
+			// viewChatTextArea.setText("");
 		} else if (protocol.equals("Chatting")) {
 			String msg = stringTokenizer.nextToken();
+			
 			viewChatTextArea.append(message + " : " + msg + "\n");
 		} else if (protocol.equals("LeaveRoom")) {
 			viewChatTextArea.append("*** (( " + myRoomName + "에서 퇴장 ))***\n");
@@ -556,6 +549,28 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			e.printStackTrace();
 		}
 
+	}
+
+	public void switchToTopPanel(JPanel currentPanel) {
+		panelStack.push(currentPanel);
+		currentPanel = panelStack.peek();
+		currentPanel.setVisible(true);
+		getContentPane().removeAll();
+		getContentPane().add(currentPanel);
+		getContentPane().validate();
+		getContentPane().repaint();
+	}
+
+	private void removeTopPanel() {
+		if (!panelStack.isEmpty()) {
+			panelStack.pop();
+		}
+
+		getContentPane().removeAll();
+		panelStack.peek().setVisible(true);
+		getContentPane().add(panelStack.peek());
+		getContentPane().validate();
+		getContentPane().repaint();
 	}
 
 	public static void main(String[] args) {
