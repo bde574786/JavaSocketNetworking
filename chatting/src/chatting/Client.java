@@ -291,8 +291,13 @@ public class Client extends JFrame implements ActionListener {
 			}
 
 		} else if (e.getSource() == sendMessageButton) {
-
 			System.out.println("sendMessageButton Click");
+			if (chattingTextField.getText().length() == 0) {
+
+			} else {
+				sendMessage("Chatting/" + myRoomName + "/" + chattingTextField.getText());
+				chattingTextField.setText("");
+			}
 		} else if (e.getSource() == joinRoomButton) {
 			String joinRoom = (String) totalRoomList.getSelectedValue();
 			leaveRoomButton.setEnabled(true);
@@ -391,7 +396,7 @@ public class Client extends JFrame implements ActionListener {
 		} else if (protocol.equals("OldRoom")) {
 			roomVectorList.add(message);
 			totalRoomList.setListData(roomVectorList);
-			
+
 		} else if (protocol.equals("JoinRoom")) {
 			myRoomName = message;
 			JOptionPane.showMessageDialog(null, "채팅방 (  " + myRoomName + " ) 에 입장완료", "알림",

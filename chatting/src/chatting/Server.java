@@ -261,11 +261,25 @@ public class Server extends JFrame implements ActionListener {
 				
 			} else if (protocol.equals("LeaveRoom")) {
 				for (int i = 0; i < roomVectorList.size(); i++) {
+					System.out.println("inMessage");
 					RoomInformation roomInfo = roomVectorList.elementAt(i);
 					if(roomInfo.roomName.equals(message)) {
+						System.out.println("121sdadasd");
 						roomInfo.removeRoom(this);
 						sendMessage("LeaveRoom/ok");
 						break;
+					}
+				}
+			}
+			else if(protocol.equals("Chatting"))
+			{
+				String msg = stringTokenizer.nextToken();
+				for(int i = 0; i<roomVectorList.size(); i++)
+				{
+					RoomInformation roomInfo = roomVectorList.elementAt(i);
+					if(roomInfo.roomName.equals(message))
+					{
+						roomInfo.roomBroadcast("Chatting/"+userId+"/"+msg);
 					}
 				}
 			}
@@ -321,9 +335,11 @@ public class Server extends JFrame implements ActionListener {
 			roomUserVectorList.remove(userInfo);
 			boolean empty = roomUserVectorList.isEmpty();
 			if (empty) {
+				System.out.println("룸 유저 비어떠염");
 				for (int i = 0; i < roomVectorList.size(); i++) {
 					RoomInformation roomInfo = roomVectorList.elementAt(i);
 					if (roomInfo.roomName.equals(roomName)) {
+						System.out.println("if 탐");
 						roomVectorList.remove(this);
 						broadcast("EmptyRoom/" + roomName);
 						break;
