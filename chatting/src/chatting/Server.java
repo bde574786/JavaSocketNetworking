@@ -293,7 +293,7 @@ public class Server extends JFrame implements ActionListener {
 					System.out.println("inMessage");
 					RoomInformation roomInfo = roomVectorList.elementAt(i);
 					if (roomInfo.roomName.equals(message)) {
-						System.out.println("121sdadasd");
+						roomInfo.roomBroadcast("Chatting/[[알림]]/(((" + userId + " 퇴장))) ");
 						roomInfo.removeRoom(this);
 						sendMessage("LeaveRoom/ok");
 						break;

@@ -524,8 +524,8 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			JOptionPane.showMessageDialog(null, "같은 방 이름이 존재합니다.", "알림", JOptionPane.ERROR_MESSAGE);
 		} else if (protocol.equals("CreateRoom")) {
 			sendMessage("JoinRoom/" + message);
-	
 			switchToTopPanel(chattingPanel);
+			viewChatTextArea.setText("") ;
 			myRoomNameList.add(message);
 			myCurrentRoomName = message;
 			leaveRoomButton.setEnabled(true);
@@ -554,7 +554,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 
 			viewChatTextArea.append(message + " : " + msg + "\n");
 		} else if (protocol.equals("LeaveRoom")) {
-			viewChatTextArea.append("*** (( " + myCurrentRoomName + "에서 퇴장 ))***\n");
+			//viewChatTextArea.append("*** (( " + myCurrentRoomName + "에서 퇴장 ))***\n");
 			myRoomNameList.remove(myCurrentRoomName);
 			// myRoomName = null;
 			createRoomButton.setEnabled(true);
