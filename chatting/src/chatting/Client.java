@@ -530,10 +530,26 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			
 			viewChatTextArea.append(message + " : " + msg + "\n");
 		} else if (protocol.equals("LeaveRoom")) {
-			viewChatTextArea.append("*** (( " + myRoomName + "에서 퇴장 ))***\n");
-			// myRoomName = null;
-			createRoomButton.setEnabled(true);
-			leaveRoomButton.setEnabled(false);
+			int result = JOptionPane.showOptionDialog(
+	                null,
+	                "정말 나가시겠습니까?",
+	                "Warning",
+	                JOptionPane.OK_CANCEL_OPTION,
+	                JOptionPane.WARNING_MESSAGE,
+	                null,
+	                new String[]{"확인", "취소"},
+	                "확인"
+	        );
+			
+			if(result == JOptionPane.OK_OPTION) {
+				removeTopPanel();
+				viewChatTextArea.setText("");
+				viewChatTextArea.append("*** (( " + myRoomName + "에서 퇴장 ))***\n");
+				// myRoomName = null;
+				createRoomButton.setEnabled(true);
+				leaveRoomButton.setEnabled(false);
+			}
+			
 		} else if (protocol.equals("EmptyRoom")) {
 			roomVectorList.remove(message);
 			totalRoomList.setListData(roomVectorList);
