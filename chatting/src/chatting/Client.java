@@ -86,6 +86,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	private Vector<String> userVectorList = new Vector<String>();
 	private Vector<String> roomVectorList = new Vector<String>();
 	private String myRoomName;
+	private boolean isUserIdvalidationOK= false;
 
 	public Client() {
 		init();
@@ -237,7 +238,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		// 채팅 탭
 		chattingPanel = new JPanel();
 		chattingPanel.setLayout(null);
-		chattingPanel.setBackground(Color.gray);
+		chattingPanel.setBackground(new Color(74, 43, 0));
 		chattingPanel.setBounds(0, 0, 400, 482);
 
 		viewChatTextArea = new JTextArea();
@@ -346,7 +347,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 				serverPortTextField.setText("포트번호를 입력하세요");
 				serverPortTextField.requestFocus();
 			} else if (userIDTextField.getText().length() == 0) {
-				userIDTextField.setText("ID를 입력하세요");
+				setTitle("ID를 입력하세요.");
 				userIDTextField.requestFocus();
 			} else {
 				ip = hostIPTextField.getText();
@@ -355,11 +356,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 					userId = userIDTextField.getText().trim();
 					try {
 						connectServer();
-						if (socket.isConnected()) {
-							loginPanel.setVisible(false);
-							mainPanel.add(waitingRoomPanel);
-							setTitle(" Welcome! [ " + userId + " ] in YouChaeTalk!!");
-						}
+
 					} catch (Exception e2) {
 						setTitle("서버와의 연결이 필요합니다.");
 					}
@@ -459,8 +456,6 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 
 			sendMessage(userId);
 
-			userVectorList.add(userId);
-			totalUserList.setListData(userVectorList);
 			Thread thread = new Thread(new Runnable() {
 
 				@Override
@@ -480,15 +475,20 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		connectButton.setEnabled(false);
+		//connectButton.setEnabled(false);
 	}
 
 	private void inMessage(String str) {
 		StringTokenizer stringTokenizer = new StringTokenizer(str, "/");
 		String protocol = stringTokenizer.nextToken();
 		String message = stringTokenizer.nextToken();
+		if (protocol.equals("UserIdValidationFailed")) {
+			userIDTextField.setText("");
+			isUserIdvalidationOK = false;
+			connectButton.setEnabled(true);
+			setTitle("이미 사용중인 USER_ID 입니다.");
 
-		if (protocol.equals("NewUser")) {
+		} else if (protocol.equals("NewUser")) {
 			userVectorList.add(message);
 			totalUserList.setListData(userVectorList);
 
@@ -496,7 +496,18 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			userVectorList.add(message);
 			totalUserList.setListData(userVectorList);
 		} else if (protocol.equals("NetworkConnected")) {
+			isUserIdvalidationOK = true;
+			if (isUserIdvalidationOK) {
+				loginPanel.setVisible(false);
+				mainPanel.add(waitingRoomPanel);
+				setTitle(" Welcome! [ " + userId + " ] in YouChaeTalk!!");
+				connectButton.setEnabled(false);
+				
+				userVectorList.add(userId);
+				totalUserList.setListData(userVectorList);
+			}
 			createRoomButton.setEnabled(socket.isConnected());
+			
 		} else if (protocol.equals("Note")) {
 			stringTokenizer = new StringTokenizer(message, "@");
 			String user = stringTokenizer.nextToken();

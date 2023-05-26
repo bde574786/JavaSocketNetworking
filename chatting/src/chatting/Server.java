@@ -38,6 +38,7 @@ public class Server extends JFrame implements ActionListener {
 	private ServerSocket serverSocket;
 	private Socket socket;
 	private int port;
+	private boolean isUserIdvalidationOK = true;
 
 	private Vector<UserInformation> userVectorList = new Vector<UserInformation>();
 	private Vector<RoomInformation> roomVectorList = new Vector<RoomInformation>();
@@ -139,12 +140,11 @@ public class Server extends JFrame implements ActionListener {
 			public void run() {
 				while (true) {
 					try {
-						textArea.append("사용자의 접속을 기다립니다\n");
-						socket = serverSocket.accept();
-						textArea.append("클라이언트 접속 성공!\n");
 
+						socket = serverSocket.accept();
 						UserInformation userInfo = new UserInformation(socket);
 						userInfo.start();
+
 					} catch (IOException e) {
 						textArea.append("서버가 중지됨! 다시 스타트 버튼을 눌러주세요\n");
 						break;
@@ -179,22 +179,43 @@ public class Server extends JFrame implements ActionListener {
 				outputStream = userSocket.getOutputStream();
 				dataOutputStream = new DataOutputStream(outputStream);
 
-				sendMessage("NetworkConnected/ok");
 				userId = dataInputStream.readUTF();
-				textArea.append("[" + userId + "] 입장\n");
-				broadcast("NewUser/" + userId);
+				for (int j = 0; j < userVectorList.size(); j++) {
+					if (userId.equals(userVectorList.elementAt(j).userId)) {
 
+						sendMessage("UserIdValidationFailed/ok");
+						System.out.println("server for문 안의 if");
+						isUserIdvalidationOK = false;
+						break;
+					} else {
+						isUserIdvalidationOK = true;
+					}
+				}
+				System.out.println("server for문 밖" + userVectorList.size());
 				for (int i = 0; i < userVectorList.size(); i++) {
-					UserInformation userInfo = userVectorList.elementAt(i);
-					sendMessage("OldUser/" + userInfo.userId);
+					System.out.println(userVectorList.elementAt(i).userId);
 				}
+				if (isUserIdvalidationOK) {
+					textArea.append("[ " + userId + " ] 로그인 성공!\n");
+					sendMessage("NetworkConnected/ok");
+					textArea.append("[ " + userId + " ] 입장\n");
+					broadcast("NewUser/" + userId);
 
-				for (int i = 0; i < roomVectorList.size(); i++) {
-					RoomInformation room = roomVectorList.elementAt(i);
-					sendMessage("OldRoom/" + room.roomName);
+					for (int i = 0; i < userVectorList.size(); i++) {
+						UserInformation userInfo = userVectorList.elementAt(i);
+						sendMessage("OldUser/" + userInfo.userId);
+					}
+
+					for (int i = 0; i < roomVectorList.size(); i++) {
+						RoomInformation room = roomVectorList.elementAt(i);
+						sendMessage("OldRoom/" + room.roomName);
+					}
+
+					userVectorList.add(this);
+
+				} else {
+					textArea.append("[ " + userId + " ] userId 중복!\n");
 				}
-
-				userVectorList.add(this);
 
 			} catch (IOException e) {
 				System.out.println(e);
@@ -252,34 +273,30 @@ public class Server extends JFrame implements ActionListener {
 			} else if (protocol.equals("JoinRoom")) {
 				for (int i = 0; i < roomVectorList.size(); i++) {
 					RoomInformation roomInfo = roomVectorList.elementAt(i);
-					if(roomInfo.roomName.equals(message)) {
+					if (roomInfo.roomName.equals(message)) {
 						roomInfo.roomBroadcast("Chatting/[[알림]]/(((" + userId + " 입장))) ");
 						roomInfo.addUser(this);
-						sendMessage("JoinRoom/"  + message);
+						sendMessage("JoinRoom/" + message);
 					}
 				}
-				
+
 			} else if (protocol.equals("LeaveRoom")) {
 				for (int i = 0; i < roomVectorList.size(); i++) {
 					System.out.println("inMessage");
 					RoomInformation roomInfo = roomVectorList.elementAt(i);
-					if(roomInfo.roomName.equals(message)) {
+					if (roomInfo.roomName.equals(message)) {
 						System.out.println("121sdadasd");
 						roomInfo.removeRoom(this);
 						sendMessage("LeaveRoom/ok");
 						break;
 					}
 				}
-			}
-			else if(protocol.equals("Chatting"))
-			{
+			} else if (protocol.equals("Chatting")) {
 				String msg = stringTokenizer.nextToken();
-				for(int i = 0; i<roomVectorList.size(); i++)
-				{
+				for (int i = 0; i < roomVectorList.size(); i++) {
 					RoomInformation roomInfo = roomVectorList.elementAt(i);
-					if(roomInfo.roomName.equals(message))
-					{
-						roomInfo.roomBroadcast("Chatting/"+userId+"/"+msg);
+					if (roomInfo.roomName.equals(message)) {
+						roomInfo.roomBroadcast("Chatting/" + userId + "/" + msg);
 					}
 				}
 			}
@@ -320,16 +337,16 @@ public class Server extends JFrame implements ActionListener {
 //		}
 
 		public void roomBroadcast(String string) {
-				for (int i = 0; i < roomUserVectorList.size(); i++) {
-					UserInformation userInfo = roomUserVectorList.elementAt(i);
-					userInfo.sendMessage(string);
-				}
+			for (int i = 0; i < roomUserVectorList.size(); i++) {
+				UserInformation userInfo = roomUserVectorList.elementAt(i);
+				userInfo.sendMessage(string);
+			}
 		}
 
 		private void addUser(UserInformation userInfo) {
 			roomUserVectorList.add(userInfo);
 		}
-		
+
 		private void removeRoom(UserInformation userInfo) {
 			System.out.println("remove room");
 			roomUserVectorList.remove(userInfo);
