@@ -191,10 +191,7 @@ public class Server extends JFrame implements ActionListener {
 						isUserIdvalidationOK = true;
 					}
 				}
-				System.out.println("server for문 밖" + userVectorList.size());
-				for (int i = 0; i < userVectorList.size(); i++) {
-					System.out.println(userVectorList.elementAt(i).userId);
-				}
+
 				if (isUserIdvalidationOK) {
 					textArea.append("[ " + userId + " ] 로그인 성공!\n");
 					sendMessage("NetworkConnected/ok");
@@ -266,7 +263,7 @@ public class Server extends JFrame implements ActionListener {
 				if (roomCheck == true) {
 					RoomInformation newRoom = new RoomInformation(message, this);
 					roomVectorList.add(newRoom);
-					
+
 					sendMessage("CreateRoom/" + message);
 					broadcast("NewRoom/" + message);
 				}
@@ -276,22 +273,21 @@ public class Server extends JFrame implements ActionListener {
 				for (int i = 0; i < roomVectorList.size(); i++) {
 					RoomInformation roomInfo = roomVectorList.elementAt(i);
 					if (roomInfo.roomName.equals(message)) {
-						for (int j = 0; j < roomInfo.roomUserVectorList.size(); j++) {
-							if (userId.equals(roomInfo.roomUserVectorList.elementAt(j).userId)) {
-								isAlreadyIn = true;
-								break;
-							}
-							if (!isAlreadyIn) {
-								roomInfo.roomBroadcast("Chatting/[[알림]]/(((" + userId + " 입장))) ");
-								roomInfo.addUser(this);
-								sendMessage("JoinRoom/" + message);
-								break;
-							}
-						}
-
+						roomInfo.roomBroadcast("Chatting/[[알림]]/(((" + userId + " 입장))) ");
+						roomInfo.addUser(this);
+						sendMessage("JoinRoom/" + message);
 					}
 				}
 
+			} else if (protocol.equals("EnterRoom")) {
+				for (int i = 0; i < roomVectorList.size(); i++) {
+					RoomInformation roomInfo = roomVectorList.elementAt(i);
+					if (roomInfo.roomName.equals(message)) {
+						// TODO
+						sendMessage("EnterRoom/" + message);
+					}
+
+				}
 			} else if (protocol.equals("LeaveRoom")) {
 				for (int i = 0; i < roomVectorList.size(); i++) {
 					System.out.println("inMessage");
@@ -333,7 +329,7 @@ public class Server extends JFrame implements ActionListener {
 
 		public RoomInformation(String roomName, UserInformation userInfo) {
 			this.roomName = roomName;
-			this.roomUserVectorList.add(userInfo);
+		//	this.roomUserVectorList.add(userInfo);
 			userInfo.currentRoomName = roomName;
 		}
 
