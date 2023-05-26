@@ -6,6 +6,8 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
@@ -31,6 +33,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class Client extends JFrame implements ActionListener {
 
@@ -47,8 +51,7 @@ public class Client extends JFrame implements ActionListener {
 	private JTextField serverPortTextField;
 	private JTextField userIDTextField;
 	private JButton connectButton;
-	
-	// 대기실 탭
+
 	private JPanel waitingRoomPanel;
 	private JLabel totalUserLabel;
 	private JLabel totalRoomLabel;
@@ -56,18 +59,16 @@ public class Client extends JFrame implements ActionListener {
 	private JList totalRoomList; // 방 리스트
 	private JButton sendNoteButton;
 	private JButton joinRoomButton;
+	private JButton createRoomButton;
+	private JButton enterRoomButton;
 
-	// 채팅 탭
 	private JPanel chattingPanel;
 	private JScrollPane chattingScroll;
 	private JTextArea viewChatTextArea;
 	private JTextField chattingTextField;
 	private JButton sendMessageButton;
-
-	// 탭 외 버튼
-	private JButton createRoomButton;
 	private JButton leaveRoomButton;
-	private JButton endButton;
+	private JButton backButton;
 
 	// 네트워크
 	private Socket socket;
@@ -87,7 +88,8 @@ public class Client extends JFrame implements ActionListener {
 		init();
 		serverPortTextField.setText("1");
 		userIDTextField.setText("user1");
-		//addListener();
+		// mainPanel.add(waitingRoomPanel);
+		addListener();
 	}
 
 	private void init() {
@@ -95,35 +97,33 @@ public class Client extends JFrame implements ActionListener {
 		// 메인 패널
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(0, 0, 400, 520);
-		//setUndecorated(true);
-        // 아이콘 설정 및 크기 조정
-        ImageIcon icon = new ImageIcon("images/icon_bee.png");
-        Image img = icon.getImage();
-        Image scaledImg = img.getScaledInstance(60, 60, Image.SCALE_SMOOTH);
-        icon = new ImageIcon(scaledImg);
-        setIconImage(icon.getImage());
-		
+		// setUndecorated(true);
+		// 아이콘 설정 및 크기 조정
+		ImageIcon icon = new ImageIcon("images/icon_bee.png");
+		Image img = icon.getImage();
+		Image scaledImg = img.getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+		icon = new ImageIcon(scaledImg);
+		setIconImage(icon.getImage());
+
 		mainPanel = new JPanel();
 		mainPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		mainPanel.setLayout(null);
 		mainPanel.setBackground(Color.white);
 		setContentPane(mainPanel);
 		setResizable(false);
-		
+
 		loginPanel = new JPanel();
 		loginPanel.setLayout(null);
 		loginPanel.setBackground(Color.white);
-//		loginPanel.setBackground(new Color(247, 203, 76));
 		loginPanel.setBounds(0, 0, 400, 482);
 		mainPanel.add(loginPanel);
-		
+
 		iconLabel = new JLabel();
 		iconLabel.setIcon(new ImageIcon("images/Icon_YouchaeTalk.png"));
 		iconLabel.setLayout(null);
-		iconLabel.setBounds(84,40, 232,232);
+		iconLabel.setBounds(84, 40, 232, 232);
 		loginPanel.add(iconLabel);
-		
-		// 로그인 탭
+
 		hostIPLabel = new JLabel("SERVER_IP ");
 		hostIPLabel.setFont(new Font("Dongle", Font.BOLD, 13));
 		hostIPLabel.setForeground(new Color(15, 64, 41));
@@ -161,9 +161,9 @@ public class Client extends JFrame implements ActionListener {
 		loginPanel.add(userIDTextField);
 
 		connectButton = new JButton("CONNECT");
-		connectButton.setFont(new Font("Dongle", Font.BOLD,12));
+		connectButton.setFont(new Font("Dongle", Font.BOLD, 12));
 		connectButton.setBackground(new Color(251, 225, 61));
-		connectButton.setForeground(new Color(15,64,41));
+		connectButton.setForeground(new Color(15, 64, 41));
 		connectButton.setBounds(140, 420, 120, 25);
 		loginPanel.add(connectButton);
 
@@ -173,127 +173,158 @@ public class Client extends JFrame implements ActionListener {
 //			panel_1.add(img_lbl);
 
 ////////////////////////////////////////////////////////////////			
-/*
-		// 대기실 탭
+
 		waitingRoomPanel = new JPanel();
 		waitingRoomPanel.setLayout(null);
-		mainTab.addTab("  대기실  ", null, waitingRoomPanel, null);
+		waitingRoomPanel.setBackground(new Color(247, 203, 76));
+		waitingRoomPanel.setBounds(0, 0, 400, 482);
 
 		totalUserLabel = new JLabel("전체접속자");
 		totalUserLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		totalUserLabel.setFont(new Font("Dongle", Font.BOLD, 13));
-		totalUserLabel.setBounds(12, 28, 102, 15);
+		totalUserLabel.setBounds(29, 95, 102, 15);
 		waitingRoomPanel.add(totalUserLabel);
 
 		totalRoomLabel = new JLabel("방 리스트");
 		totalRoomLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		totalRoomLabel.setFont(new Font("Dongle", Font.BOLD, 13));
-		totalRoomLabel.setBounds(209, 27, 102, 15);
+		totalRoomLabel.setBounds(224, 95, 102, 15);
 		waitingRoomPanel.add(totalRoomLabel);
 
 		totalUserList = new JList();
-		totalUserList.setBounds(12, 69, 102, 257);
+		totalUserList.setBounds(20, 125, 120, 257);
 		waitingRoomPanel.add(totalUserList);
 
 		totalRoomList = new JList();
-		totalRoomList.setBounds(209, 69, 102, 257);
+		totalRoomList.setBounds(180, 125, 188, 257);
 		waitingRoomPanel.add(totalRoomList);
 
 		sendNoteButton = new JButton("쪽지보내기");
 		sendNoteButton.setFont(new Font("Dongle", Font.BOLD, 12));
-		sendNoteButton.setBounds(12, 345, 102, 23);
-		
+		sendNoteButton.setBounds(29, 395, 102, 23);
 		sendNoteButton.setBackground(new Color(255, 223, 136));
-		sendNoteButton.setForeground(new Color(15,64,41));
+		sendNoteButton.setForeground(new Color(15, 64, 41));
 		waitingRoomPanel.add(sendNoteButton);
 
 		joinRoomButton = new JButton("채팅방참여");
 		joinRoomButton.setFont(new Font("Dongle", Font.BOLD, 12));
-		joinRoomButton.setBounds(209, 345, 102, 23);
-
+		joinRoomButton.setBounds(180, 395, 102, 23);
 		joinRoomButton.setBackground(new Color(255, 223, 136));
-		joinRoomButton.setForeground(new Color(15,64,41));
+		joinRoomButton.setForeground(new Color(15, 64, 41));
 		hostIPTextField.setText("127.0.0.1");
 		waitingRoomPanel.add(joinRoomButton);
-*/
+
+		enterRoomButton = new JButton("입장");
+		enterRoomButton.setFont(new Font("Dongle", Font.BOLD, 12));
+		enterRoomButton.setBounds(290, 395, 70, 23);
+		enterRoomButton.setBackground(new Color(255, 223, 136));
+		enterRoomButton.setForeground(new Color(15, 64, 41));
+		waitingRoomPanel.add(enterRoomButton);
+
+		createRoomButton = new JButton("+ 방 만들기");
+		createRoomButton.setFont(new Font("Dongle", Font.BOLD, 11));
+		createRoomButton.setBounds(266, 45, 102, 23);
+		createRoomButton.setBackground(new Color(255, 223, 136));
+		createRoomButton.setForeground(new Color(15, 64, 41));
+		createRoomButton.setEnabled(false);
+		waitingRoomPanel.add(createRoomButton);
+
 //////////////////////////////////////////////////////////////////////			
 
-		/*
 		// 채팅 탭
 		chattingPanel = new JPanel();
 		chattingPanel.setLayout(null);
-		mainTab.addTab("  채팅  ", null, chattingPanel, null);
+		chattingPanel.setBackground(Color.gray);
+		chattingPanel.setBounds(0, 0, 400, 482);
 
 		viewChatTextArea = new JTextArea();
 		viewChatTextArea.setEnabled(false);
 		viewChatTextArea.setEditable(false);
 		viewChatTextArea.setFont(new Font("Dongle", Font.BOLD, 12));
-		viewChatTextArea.setBounds(0, 0, 323, 337);
+		viewChatTextArea.setBounds(10, 60, 362, 380);
 		chattingPanel.add(viewChatTextArea);
 
 		chattingTextField = new JTextField();
 		chattingTextField.setFont(new Font("Dongle", Font.BOLD, 11));
-		chattingTextField.setBounds(0, 347, 214, 21);
+		chattingTextField.setBounds(10, 450, 280, 21);
 		chattingTextField.setColumns(10);
 		chattingPanel.add(chattingTextField);
 
 		sendMessageButton = new JButton("전 송");
 		sendMessageButton.setFont(new Font("Dongle", Font.BOLD, 12));
-		sendMessageButton.setBounds(226, 346, 97, 23);
+		sendMessageButton.setBounds(300, 450, 72, 23);
 		sendMessageButton.setBackground(new Color(255, 223, 136));
-		sendMessageButton.setForeground(new Color(15,64,41));
+		sendMessageButton.setForeground(new Color(15, 64, 41));
 		chattingPanel.add(sendMessageButton);
 
 		chattingScroll = new JScrollPane();
 		chattingScroll.setEnabled(false);
-		chattingScroll.setBounds(0, 0, 323, 337);
 		chattingPanel.add(chattingScroll);
-*/
-//////////////////////////////////////////////////////////////////////////	
-
-		// 탭 외 버튼
-		/**
-		 * 
-		createRoomButton = new JButton("방 만들기");
-		createRoomButton.setFont(new Font("Dongle", Font.BOLD, 11));
-		createRoomButton.setBounds(352, 93, 97, 2);
-		createRoomButton.setBackground(new Color(255, 223, 136));
-		createRoomButton.setForeground(new Color(15,64,41));
-		createRoomButton.setEnabled(false);
-		mainPanel.add(createRoomButton);
 
 		leaveRoomButton = new JButton("방 나가기");
 		leaveRoomButton.setFont(new Font("Dongle", Font.BOLD, 11));
-		leaveRoomButton.setBounds(352, 150, 97, 27);
+		leaveRoomButton.setBounds(275, 22, 97, 27);
 		leaveRoomButton.setEnabled(false);
 		leaveRoomButton.setBackground(new Color(255, 223, 136));
-		leaveRoomButton.setForeground(new Color(15,64,41));
-		mainPanel.add(leaveRoomButton);
+		leaveRoomButton.setForeground(new Color(15, 64, 41));
+		chattingPanel.add(leaveRoomButton);
 
-		endButton = new JButton("종료");
-		endButton.setFont(new Font("Dongle", Font.BOLD, 12));
-		endButton.setBounds(352, 398, 97, 27);
-		endButton.setBackground(new Color(255, 223, 136));
-		endButton.setForeground(new Color(15,64,41));
-		mainPanel.add(endButton);
-		 */
+		backButton = new JButton(new ImageIcon("images/arrow.png"));
+		backButton.setBounds(10, 22, 40, 40);
+		// backButton.setOpaque(false);
+		backButton.setBorderPainted(false);
+		backButton.setContentAreaFilled(false);
+
+		// backButton.setFocusPainted(false);
+		// backButton.setBackground(new Color(1, 1, 1, 0));
+		chattingPanel.add(backButton);
 
 		setVisible(true);
 
 	}
 
-	/**
 	private void addListener() {
 		connectButton.addActionListener(this);
 		sendMessageButton.addActionListener(this);
 		sendNoteButton.addActionListener(this);
 		joinRoomButton.addActionListener(this);
+		enterRoomButton.addActionListener(this);
 		chattingTextField.addActionListener(this);
-		endButton.addActionListener(this);
 		createRoomButton.addActionListener(this);
 		leaveRoomButton.addActionListener(this);
+		backButton.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				backButton.setContentAreaFilled(false);
+
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				backButton.setContentAreaFilled(true);
+				backButton.setBackground(Color.red);
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				backButton.setContentAreaFilled(false);
+
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				backButton.setContentAreaFilled(true);
+				backButton.setBackground(Color.red);
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				backButton.setContentAreaFilled(false);
+			}
+
+		});
 	}
-	*/
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -312,12 +343,14 @@ public class Client extends JFrame implements ActionListener {
 				ip = hostIPTextField.getText();
 				try {
 					port = Integer.parseInt(serverPortTextField.getText().trim());
+					loginPanel.setVisible(false);
+					mainPanel.add(waitingRoomPanel);
 				} catch (Exception e2) {
 					serverPortTextField.setText("잘못 입력하였습니다.");
 				}
 				userId = userIDTextField.getText().trim();
 				connectServer();
-				setTitle("[" + userId + " ] 님 밍스톡에 오신걸 환경합니다.");
+				setTitle(" Welcome! [ " + userId + " ] in YouChaeTalk!!");
 			}
 
 		} else if (e.getSource() == sendNoteButton) {
@@ -335,7 +368,6 @@ public class Client extends JFrame implements ActionListener {
 		} else if (e.getSource() == sendMessageButton) {
 			System.out.println("sendMessageButton Click");
 			if (chattingTextField.getText().length() == 0) {
-
 			} else {
 				sendMessage("Chatting/" + myRoomName + "/" + chattingTextField.getText());
 				chattingTextField.setText("");
@@ -345,7 +377,12 @@ public class Client extends JFrame implements ActionListener {
 			leaveRoomButton.setEnabled(true);
 			createRoomButton.setEnabled(false);
 			sendMessage("JoinRoom/" + joinRoom);
-		} else if (e.getSource() == createRoomButton) {
+		} else if (e.getSource() == enterRoomButton) {
+			waitingRoomPanel.setVisible(false);
+			mainPanel.add(chattingPanel);
+		}
+
+		else if (e.getSource() == createRoomButton) {
 			String roomName = JOptionPane.showInputDialog("방 이름을 입력하세요");
 			if (roomName != null) {
 				sendMessage("CreateRoom/" + roomName);
@@ -359,8 +396,6 @@ public class Client extends JFrame implements ActionListener {
 				joinRoomButton.setEnabled(false);
 			}
 
-		} else if (e.getSource() == endButton) {
-			System.exit(0);
 		}
 
 	}
