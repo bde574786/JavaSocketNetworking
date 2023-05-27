@@ -276,6 +276,7 @@ public class Server extends JFrame implements ActionListener {
 						roomInfo.addUser(this);
 						roomInfo.roomBroadcast("Chatting/[[알림]]/(((" + userId + " 입장))) ");
 						sendMessage("JoinRoom/" + message);
+
 					}
 				}
 
@@ -293,12 +294,20 @@ public class Server extends JFrame implements ActionListener {
 					System.out.println("inMessage");
 					RoomInformation roomInfo = roomVectorList.elementAt(i);
 					if (roomInfo.roomName.equals(message)) {
-						roomInfo.roomBroadcast("Chatting/[[알림]]/(((" + userId + " 퇴장))) ");
-						roomInfo.removeRoom(this);
 						sendMessage("LeaveRoom/ok");
 						break;
 					}
 				}
+			} else if (protocol.equals("LeaveRoomOK")) {
+				for (int i = 0; i < roomVectorList.size(); i++) {
+					RoomInformation roomInfo = roomVectorList.elementAt(i);
+					if (userId.equals(message)) {
+						roomInfo.excludeBroadcast("Chatting/[[알림]]/(((" + userId + " 퇴장))) ", userId);
+						roomInfo.removeRoom(this);
+						break;
+					}
+				}
+
 			} else if (protocol.equals("Chatting")) {
 				String msg = stringTokenizer.nextToken();
 				for (int i = 0; i < roomVectorList.size(); i++) {
@@ -329,7 +338,7 @@ public class Server extends JFrame implements ActionListener {
 
 		public RoomInformation(String roomName, UserInformation userInfo) {
 			this.roomName = roomName;
-		//	this.roomUserVectorList.add(userInfo);
+			// this.roomUserVectorList.add(userInfo);
 			userInfo.currentRoomName = roomName;
 		}
 
@@ -337,6 +346,15 @@ public class Server extends JFrame implements ActionListener {
 			for (int i = 0; i < roomUserVectorList.size(); i++) {
 				UserInformation userInfo = roomUserVectorList.elementAt(i);
 				userInfo.sendMessage(string);
+			}
+		}
+
+		public void excludeBroadcast(String string, String userId) {
+			for (int i = 0; i < userVectorList.size(); i++) {
+				UserInformation userInfo = userVectorList.elementAt(i);
+				if (!userInfo.userId.equals(userId)) {
+					userInfo.sendMessage(string);
+				}
 			}
 		}
 
