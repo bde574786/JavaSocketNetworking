@@ -289,19 +289,18 @@ public class Server extends JFrame implements ActionListener {
 					}
 
 				}
-			} else if (protocol.equals("LeaveRoom")) {
+			} 
+			/*
+			 * else if (protocol.equals("LeaveRoom")) { for (int i = 0; i <
+			 * roomVectorList.size(); i++) { System.out.println("inMessage");
+			 * RoomInformation roomInfo = roomVectorList.elementAt(i); if
+			 * (roomInfo.roomName.equals(message)) { sendMessage("LeaveRoom/ok"); break; } }
+			 * }
+			 */
+			else if (protocol.equals("LeaveRoomOK")) {
 				for (int i = 0; i < roomVectorList.size(); i++) {
-					System.out.println("inMessage");
 					RoomInformation roomInfo = roomVectorList.elementAt(i);
 					if (roomInfo.roomName.equals(message)) {
-						sendMessage("LeaveRoom/ok");
-						break;
-					}
-				}
-			} else if (protocol.equals("LeaveRoomOK")) {
-				for (int i = 0; i < roomVectorList.size(); i++) {
-					RoomInformation roomInfo = roomVectorList.elementAt(i);
-					if (userId.equals(message)) {
 						roomInfo.excludeBroadcast("Chatting/[[알림]]/(((" + userId + " 퇴장))) ", userId);
 						roomInfo.removeRoom(this);
 						break;
@@ -350,8 +349,8 @@ public class Server extends JFrame implements ActionListener {
 		}
 
 		public void excludeBroadcast(String string, String userId) {
-			for (int i = 0; i < userVectorList.size(); i++) {
-				UserInformation userInfo = userVectorList.elementAt(i);
+			for (int i = 0; i < roomUserVectorList.size(); i++) {
+				UserInformation userInfo = roomUserVectorList.elementAt(i);
 				if (!userInfo.userId.equals(userId)) {
 					userInfo.sendMessage(string);
 				}

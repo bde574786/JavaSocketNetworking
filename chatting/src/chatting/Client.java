@@ -332,18 +332,18 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			}
 
 		});
-        totalRoomList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    if (totalRoomList.getSelectedIndex() != -1) {
-                        joinRoomButton.setEnabled(true); // 선택된 요소가 있으면 버튼 활성화
-                    } else {
-                    	joinRoomButton.setEnabled(false); // 선택된 요소가 없으면 버튼 비활성화
-                    }
-                }
-            }
-        });
+		totalRoomList.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				if (!e.getValueIsAdjusting()) {
+					if (totalRoomList.getSelectedIndex() != -1) {
+						joinRoomButton.setEnabled(true); // 선택된 요소가 있으면 버튼 활성화
+					} else {
+						joinRoomButton.setEnabled(false); // 선택된 요소가 없으면 버튼 비활성화
+					}
+				}
+			}
+		});
 
 	}
 
@@ -426,7 +426,8 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			System.out.println("makeRoomButton Click");
 
 		} else if (e.getSource() == leaveRoomButton) {
-			sendMessage("LeaveRoom/" + myCurrentRoomName);
+			checkLeaveRoom();
+			// sendMessage("LeaveRoom/" + myCurrentRoomName);
 			if (roomVectorList.size() != 0) {
 				joinRoomButton.setEnabled(true);
 			} else {
@@ -436,7 +437,20 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		}
 
 	}
+	private void checkLeaveRoom() {
+		int result = JOptionPane.showOptionDialog(null, "정말 나가시겠습니까?", "Warning", JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.WARNING_MESSAGE, null, new String[] { "확인", "취소" }, "확인");
 
+		if (result == JOptionPane.OK_OPTION) {
+			System.out.println("okoption");
+			sendMessage("LeaveRoomOK/" + myCurrentRoomName);
+			myRoomNameList.remove(myCurrentRoomName);
+			removeTopPanel();
+			viewChatTextArea.setText("");
+			createRoomButton.setEnabled(true);
+			leaveRoomButton.setEnabled(false);
+		}
+	}
 	@Override
 	public void keyTyped(KeyEvent e) {
 		// TODO Auto-generated method stub
@@ -538,7 +552,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		} else if (protocol.equals("CreateRoom")) {
 			sendMessage("JoinRoom/" + message);
 			switchToTopPanel(chattingPanel);
-			viewChatTextArea.setText("") ;
+			viewChatTextArea.setText("");
 			myRoomNameList.add(message);
 			myCurrentRoomName = message;
 			leaveRoomButton.setEnabled(true);
@@ -560,7 +574,6 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		} else if (protocol.equals("EnterRoom")) {
 			// TODO
 			myCurrentRoomName = message;
-			
 
 		} else if (protocol.equals("Chatting")) {
 			String msg = stringTokenizer.nextToken();
@@ -568,26 +581,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			viewChatTextArea.append(message + " : " + msg + "\n");
 		} else if (protocol.equals("LeaveRoom")) {
 
-			int result = JOptionPane.showOptionDialog(
-	                null,
-	                "정말 나가시겠습니까?",
-	                "Warning",
-	                JOptionPane.OK_CANCEL_OPTION,
-	                JOptionPane.WARNING_MESSAGE,
-	                null,
-	                new String[]{"확인", "취소"},
-	                "확인"
-	        );
 			
-			if(result == JOptionPane.OK_OPTION) {
-				System.out.println("okoption");
-				sendMessage("LeaveRoomOK/" + userId);
-				myRoomNameList.remove(myCurrentRoomName);
-				removeTopPanel();
-				viewChatTextArea.setText("");
-				createRoomButton.setEnabled(true);
-				leaveRoomButton.setEnabled(false);
-			}
 
 		} else if (protocol.equals("EmptyRoom")) {
 			roomVectorList.remove(message);
