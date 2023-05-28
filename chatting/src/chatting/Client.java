@@ -43,6 +43,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -64,7 +65,6 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	private JTextField userIDTextField;
 	private JButton connectButton;
 
-	
 	private JPanel waitingRoomPanel;
 	private JPanel userListPanel;
 	private JLabel totalUserLabel;
@@ -85,7 +85,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	private JButton backButton;
 	private ImageIcon backbuttonImageIcon;
 	private ImageIcon coloredIcon;
-	
+
 	// 네트워크
 	private Socket socket;
 	private String ip;
@@ -232,29 +232,16 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		totalUserList = new JList();
-		totalUserList.setBounds(20, 125, 120, 257);
-		// waitingRoomPanel.add(totalUserList);
-		try {
-			InputStream inputStream = new BufferedInputStream(new FileInputStream("fonts/배스킨라빈스 R.ttf"));
-			Font font = Font.createFont(Font.TRUETYPE_FONT, inputStream);
-			totalUserList.setFont(font.deriveFont(Font.BOLD, 14f));
-		} catch (FontFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
+//ddddddddddddddddd
 		roomListScroll = new JScrollPane();
-		roomListScroll.setBounds(150, 100, 230, 30);
-		//roomListScroll.setBackground(new Color(0, 0, 0, 0));
-		//roomListScroll.setPreferredSize(roomListScroll.getPreferredSize());
-		waitingRoomPanel.add(roomListScroll);
-		
+		roomListScroll.setBounds(150, 100, 230, 100);
+		roomListScroll.setBackground(Color.white);
+		// roomListScroll.setPreferredSize(roomListScroll.getPreferredSize());
+		JViewport viewport = roomListScroll.getViewport();
+		viewport.setBackground(Color.white);
+
 		totalRoomList = new JList();
+		totalRoomList.setBackground(Color.white);
 		totalRoomList.setBounds(0, 0, 200, 257);
 		try {
 			InputStream inputStream = new BufferedInputStream(new FileInputStream("fonts/배스킨라빈스 R.ttf"));
@@ -267,11 +254,10 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//totalRoomList.setLayoutOrientation(JList.VERTICAL);
-		roomListScroll.add(totalRoomList);
-		
+		// totalRoomList.setLayoutOrientation(JList.VERTICAL);
+		viewport.add(totalRoomList);
+		waitingRoomPanel.add(roomListScroll);
 
-		
 		sendNoteButton = new JButton("쪽지보내기");
 		sendNoteButton.setBounds(29, 395, 102, 23);
 		sendNoteButton.setBackground(new Color(255, 223, 136));
@@ -293,7 +279,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		createRoomButton.setForeground(new Color(69, 69, 69));
 		createRoomButton.setBorder(null);
 		createRoomButton.setFocusPainted(false);
-		createRoomButton.setEnabled(false);
+		// createRoomButton.setEnabled(false);
 		createRoomButton.setRolloverEnabled(false);
 		createRoomButton.setContentAreaFilled(false);
 		waitingRoomPanel.add(createRoomButton);
