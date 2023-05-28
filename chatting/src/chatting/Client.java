@@ -1,34 +1,37 @@
 package chatting;
 
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
+import java.io.InputStream;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+
+import java.awt.Color;
 import java.awt.FontFormatException;
 import java.awt.Image;
-import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.io.BufferedInputStream;
 import java.io.DataInputStream;
+import java.io.DataOutput;
 import java.io.DataOutputStream;
-import java.io.FileInputStream;
+import java.io.File;
+
 import java.io.IOException;
-import java.io.InputStream;
+
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.channels.NetworkChannel;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -36,11 +39,10 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JViewport;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -63,13 +65,9 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	private JButton connectButton;
 
 	private JPanel waitingRoomPanel;
-	private JScrollPane roomListScroll;
-	private JPanel userListPanel;
-	private JPanel bottomPanel;
-	private JLabel currentUserLabel;
-	private JList totalUserList; // 전체접속자 리스트
-	private JScrollPane userListScroll;
+	private JLabel totalUserLabel;
 	private JLabel totalRoomLabel;
+	private JList totalUserList; // 전체접속자 리스트
 	private JList totalRoomList; // 방 리스트
 	private JButton sendNoteButton;
 	private JButton joinRoomButton;
@@ -84,7 +82,6 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	private JButton backButton;
 	private ImageIcon backbuttonImageIcon;
 	private ImageIcon coloredIcon;
-
 	// 네트워크
 	private Socket socket;
 	private String ip;
@@ -107,7 +104,8 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		init();
 		serverPortTextField.setText("1");
 		userIDTextField.setText("user1");
-		hostIPTextField.setText("127.0.0.1");
+
+		// mainPanel.add(waitingRoomPanel);
 		addListener();
 	}
 
@@ -145,36 +143,43 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		loginPanel.add(iconLabel);
 
 		hostIPLabel = new JLabel("SERVER_IP ");
+		hostIPLabel.setFont(new Font("Dongle", Font.BOLD, 13));
 		hostIPLabel.setForeground(new Color(15, 64, 41));
 		hostIPLabel.setBounds(70, 305, 110, 15);
 		loginPanel.add(hostIPLabel);
 
 		hostIPTextField = new JTextField();
+		hostIPTextField.setFont(new Font("Dongle", Font.PLAIN, 13));
 		hostIPTextField.setBounds(180, 305, 150, 20);
 		hostIPTextField.setColumns(10);
 		loginPanel.add(hostIPTextField);
 
 		serverPortLabel = new JLabel("SERVER_PORT");
+		serverPortLabel.setFont(new Font("Dongle", Font.BOLD, 13));
 		serverPortLabel.setBounds(70, 340, 110, 15);
 		serverPortLabel.setForeground(new Color(15, 64, 41));
 		loginPanel.add(serverPortLabel);
 
 		serverPortTextField = new JTextField();
+		serverPortTextField.setFont(new Font("Dongle", Font.PLAIN, 13));
 		serverPortTextField.setBounds(180, 340, 150, 20);
 		serverPortTextField.setColumns(10);
 		loginPanel.add(serverPortTextField);
 
 		userIDLabel = new JLabel("USER_ID");
+		userIDLabel.setFont(new Font("Dongle", Font.BOLD, 13));
 		userIDLabel.setBounds(70, 375, 110, 15);
 		userIDLabel.setForeground(new Color(15, 64, 41));
 		loginPanel.add(userIDLabel);
 
 		userIDTextField = new JTextField();
+		userIDTextField.setFont(new Font("Dongle", Font.PLAIN, 13));
 		userIDTextField.setBounds(180, 375, 150, 20);
 		userIDTextField.setColumns(10);
 		loginPanel.add(userIDTextField);
 
 		connectButton = new JButton("CONNECT");
+		connectButton.setFont(new Font("Dongle", Font.BOLD, 12));
 		connectButton.setBackground(new Color(251, 225, 61));
 		connectButton.setForeground(new Color(15, 64, 41));
 		connectButton.setBounds(140, 420, 120, 25);
@@ -189,151 +194,97 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 
 		waitingRoomPanel = new JPanel();
 		waitingRoomPanel.setLayout(null);
-		waitingRoomPanel.setBackground(new Color(255, 255, 255));
+		waitingRoomPanel.setBackground(new Color(247, 203, 76));
 		waitingRoomPanel.setBounds(0, 0, 400, 482);
 
-		// bottomPanel
-		bottomPanel = new JPanel();
-		bottomPanel.setBackground(new Color(249, 249, 249));
-		bottomPanel.setBounds(127, 384, 273, 98);
-		bottomPanel.setLayout(null);
-		waitingRoomPanel.add(bottomPanel);
-		
-		joinRoomButton = new JButton("Enter Room");
-		joinRoomButton.setBounds(135, 24, 102, 23);
-		joinRoomButton.setBorder(null);
-		joinRoomButton.setBackground(new Color(212, 212, 212));
-		joinRoomButton.setForeground(new Color(90, 90, 90));
-		joinRoomButton.setEnabled(false);
-		bottomPanel.add(joinRoomButton);
-		
-		
-		// userListPanel
-		userListPanel = new JPanel();
-		userListPanel.setBackground(new Color(236, 236, 236));
-		userListPanel.setBounds(0, 0, 127, 480);
-		userListPanel.setLayout(null);
-		waitingRoomPanel.add(userListPanel);
+		totalUserLabel = new JLabel("전체접속자");
+		totalUserLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		// totalUserLabel.setFont(new Font("Dongle", Font.BOLD, 13));
+		totalUserLabel.setBounds(29, 95, 102, 15);
+		waitingRoomPanel.add(totalUserLabel);
 
-		currentUserLabel = new JLabel();
-		currentUserLabel.setBounds(22, 100, 60, 20);
-		setFont(currentUserLabel, Font.PLAIN, 18f);
-		userListPanel.add(currentUserLabel);
+		try {
+			InputStream inputStream = new BufferedInputStream(new FileInputStream("fonts/배스킨라빈스 R.ttf"));
+			Font font = Font.createFont(Font.TRUETYPE_FONT, inputStream);
+			totalUserLabel.setFont(font.deriveFont(Font.BOLD, 16f));
+		} catch (FontFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		totalRoomLabel = new JLabel("방 리스트");
+		totalRoomLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		totalRoomLabel.setFont(new Font("Dongle", Font.BOLD, 13));
+		totalRoomLabel.setBounds(224, 95, 102, 15);
+		waitingRoomPanel.add(totalRoomLabel);
+		try {
+			InputStream inputStream = new BufferedInputStream(new FileInputStream("fonts/배스킨라빈스 R.ttf"));
+			Font font = Font.createFont(Font.TRUETYPE_FONT, inputStream);
+			totalRoomLabel.setFont(font.deriveFont(Font.BOLD, 16f));
+		} catch (FontFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		totalUserList = new JList();
-		totalUserList.setBounds(0, 0, 90, 257);
-		totalUserList.setBackground(new Color(236, 236, 236));
-		totalUserList.setSelectionBackground(null);
-		totalUserList.setSelectionForeground(new Color(150, 150, 150));
-		setFont(totalUserList, Font.PLAIN, 14f);
-		
-		DefaultListCellRenderer renderer = new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                label.setHorizontalAlignment(SwingConstants.LEFT);
-                label.setBorder(new EmptyBorder(10, 0, 10, 10));
-                return label;
-            }
-        };
-
-        totalUserList.setCellRenderer(renderer);
-		userListPanel.add(totalUserList);
-
-		userListScroll = new JScrollPane();
-		userListScroll.setBounds(7, 130, 90, 250);
-		userListScroll.setBorder(null);
-		userListScroll.setBackground(Color.white);
-		JPanel contentPane = new JPanel();
-		JViewport jViewport = new JViewport();
-		jViewport.setView(contentPane);
-		userListScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		//userListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		userListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-		
-		
-		userListScroll.getVerticalScrollBar().setEnabled(false);
-		userListScroll.setViewport(jViewport);
-		contentPane.add(totalUserList);
-		userListPanel.add(userListScroll);
-		
-		/*
-		 * roomListScroll.addMouseWheelListener(new MouseWheelListener() {
-		 * 
-		 * @Override public void mouseWheelMoved(MouseWheelEvent e) { JScrollBar
-		 * verticalScrollBar = roomListScroll.getVerticalScrollBar();
-		 * verticalScrollBar.setValue(verticalScrollBar.getValue() -
-		 * e.getWheelRotation() * verticalScrollBar.getUnitIncrement()*100); } });
-		 */
-		
-		// 컨텐트 패널에 대한 MouseWheelListener를 추가합니다.
-		userListScroll.getViewport().getView().addMouseWheelListener(new MouseWheelListener() {
-		    @Override
-		    public void mouseWheelMoved(MouseWheelEvent e) {
-		        // 마우스 휠 이벤트 처리 로직을 여기에 작성합니다.
-		        // 예: 스크롤을 위로 올리는 경우 -1, 아래로 내리는 경우 1을 반환합니다.
-		        int scrollAmount = e.getWheelRotation();
-		        
-		        // 스크롤 이벤트에 따라 컨텐트 패널을 스크롤하는 코드를 작성합니다.
-		        // 예: 컨텐트 패널을 위로 스크롤하는 경우
-		        JViewport viewport = userListScroll.getViewport();
-		        Point viewPosition = viewport.getViewPosition();
-		        viewPosition.translate(0, scrollAmount * 10); // 스크롤 속도 조정을 위해 값을 조정합니다.
-		        viewport.setViewPosition(viewPosition);
-		    }
-		});
-		
-		
-		
-		
-		
-		sendNoteButton = new JButton("Send Message");
-		sendNoteButton.setBounds(7,407, 112, 23);
-		sendNoteButton.setBorder(null);
-		sendNoteButton.setBackground(new Color(212, 212, 212));
-		sendNoteButton.setForeground(new Color(90, 90, 90));
-		setFont(sendNoteButton, Font.PLAIN, 14f);
-		userListPanel.add(sendNoteButton);
-
-		totalRoomLabel = new JLabel("채팅");
-		totalRoomLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		totalRoomLabel.setBounds(148, 63, 40, 17);
-		waitingRoomPanel.add(totalRoomLabel);
-		setFont(totalRoomLabel, Font.BOLD, 16f);
+		totalUserList.setBounds(20, 125, 120, 257);
+		waitingRoomPanel.add(totalUserList);
+		try {
+			InputStream inputStream = new BufferedInputStream(new FileInputStream("fonts/배스킨라빈스 R.ttf"));
+			Font font = Font.createFont(Font.TRUETYPE_FONT, inputStream);
+			totalUserList.setFont(font.deriveFont(Font.BOLD, 14f));
+		} catch (FontFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		totalRoomList = new JList();
-		totalRoomList.setBackground(Color.white);
-		totalRoomList.setBounds(0, 0, 200, 257);
-		totalRoomList.setBorder(null);
-		totalRoomList.setFocusable(false);
+		totalRoomList.setBounds(180, 125, 188, 257);
+		try {
+			InputStream inputStream = new BufferedInputStream(new FileInputStream("fonts/배스킨라빈스 R.ttf"));
+			Font font = Font.createFont(Font.TRUETYPE_FONT, inputStream);
+			totalRoomList.setFont(font.deriveFont(Font.BOLD, 14f));
+		} catch (FontFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
+		waitingRoomPanel.add(totalRoomList);
 
-		totalRoomList.setSelectionBackground(null);
-		totalRoomList.setSelectionForeground(new Color(150, 150, 150));
-		setFont(totalRoomList, Font.PLAIN, 16f);
+		sendNoteButton = new JButton("쪽지보내기");
+		sendNoteButton.setFont(new Font("Dongle", Font.BOLD, 12));
+		sendNoteButton.setBounds(29, 395, 102, 23);
+		sendNoteButton.setBackground(new Color(255, 223, 136));
+		sendNoteButton.setForeground(new Color(15, 64, 41));
+		waitingRoomPanel.add(sendNoteButton);
 
-		roomListScroll = new JScrollPane();
-		roomListScroll.setBounds(150, 100, 230, 285);
-		roomListScroll.setBackground(Color.white);
-		roomListScroll.setBorder(null);
-		waitingRoomPanel.add(roomListScroll);
+		joinRoomButton = new JButton("채팅방참여");
+		joinRoomButton.setFont(new Font("Dongle", Font.BOLD, 12));
+		joinRoomButton.setBounds(180, 395, 102, 23);
+		joinRoomButton.setBackground(new Color(255, 223, 136));
+		joinRoomButton.setForeground(new Color(15, 64, 41));
+		hostIPTextField.setText("127.0.0.1");
+		waitingRoomPanel.add(joinRoomButton);
+		joinRoomButton.setEnabled(false);
 
-		JViewport roomListViewport = roomListScroll.getViewport();
-		roomListViewport.setBackground(Color.white);
-		roomListViewport.add(totalRoomList);
-		
-
-
-
-		createRoomButton = new JButton("+");
-		createRoomButton.setBounds(330, 20, 35, 35);
-		createRoomButton.setFont(new Font("Dongle", Font.BOLD, 25));
-		createRoomButton.setBackground(new Color(255, 255, 255));
-		createRoomButton.setForeground(new Color(69, 69, 69));
-		createRoomButton.setBorder(null);
-		createRoomButton.setFocusPainted(false);
-		createRoomButton.setRolloverEnabled(false);
-		createRoomButton.setContentAreaFilled(false);
+		createRoomButton = new JButton("+ 방 만들기");
+		createRoomButton.setFont(new Font("Dongle", Font.BOLD, 11));
+		createRoomButton.setBounds(266, 45, 102, 23);
+		createRoomButton.setBackground(new Color(255, 223, 136));
+		createRoomButton.setForeground(new Color(15, 64, 41));
+		createRoomButton.setEnabled(false);
 		waitingRoomPanel.add(createRoomButton);
 
 //////////////////////////////////////////////////////////////////////			
@@ -365,6 +316,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		chattingPanel.add(sendMessageButton);
 
 		chattingScroll = new JScrollPane();
+		chattingScroll.setEnabled(false);
 		chattingPanel.add(chattingScroll);
 
 		leaveRoomButton = new JButton("방 나가기");
@@ -379,9 +331,14 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		coloredIcon = new ImageIcon("images/coloredArrow.png");
 
 		backButton = new JButton(backbuttonImageIcon);
+
 		backButton.setBounds(10, 21, 30, 30);
+		// backButton.setOpaque(false);
 		backButton.setBorderPainted(false);
 		backButton.setContentAreaFilled(false);
+
+		// backButton.setFocusPainted(false);
+		// backButton.setBackground(new Color(1, 1, 1, 0));
 		chattingPanel.add(backButton);
 
 		setVisible(true);
@@ -461,8 +418,6 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 				try {
 					port = Integer.parseInt(serverPortTextField.getText().trim());
 					userId = userIDTextField.getText().trim();
-					currentUserLabel.setText(userId);
-
 					try {
 						connectServer();
 
@@ -718,20 +673,6 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		getContentPane().add(panelStack.peek());
 		getContentPane().validate();
 		getContentPane().repaint();
-	}
-
-	private void setFont(Component component, int style, float size) {
-		try {
-			InputStream inputStream = new BufferedInputStream(new FileInputStream("fonts/배스킨라빈스 R.ttf"));
-			Font font = Font.createFont(Font.TRUETYPE_FONT, inputStream);
-			component.setFont(font.deriveFont(style, size));
-		} catch (FontFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	public static void main(String[] args) {
