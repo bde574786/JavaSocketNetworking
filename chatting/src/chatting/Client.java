@@ -247,25 +247,16 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		JPanel contentPane = new JPanel();
 		JViewport jViewport = new JViewport();
 		jViewport.setView(contentPane);
-		userListScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		//userListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-		userListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-		//userListScroll.getVerticalScrollBar().setEnabled(false);
 		
 		
 		userListScroll.setViewport(jViewport);
 		contentPane.add(totalUserList);
 		userListPanel.add(userListScroll);
 		
-		/*
-		 * roomListScroll.addMouseWheelListener(new MouseWheelListener() {
-		 * 
-		 * @Override public void mouseWheelMoved(MouseWheelEvent e) { JScrollBar
-		 * verticalScrollBar = roomListScroll.getVerticalScrollBar();
-		 * verticalScrollBar.setValue(verticalScrollBar.getValue() -
-		 * e.getWheelRotation() * verticalScrollBar.getUnitIncrement()*100); } });
-		 */
-		
+		userListScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		//userListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		userListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+		//userListScroll.getVerticalScrollBar().setEnabled(false);
 		// 컨텐트 패널에 대한 MouseWheelListener를 추가합니다.
 		userListScroll.getViewport().getView().addMouseWheelListener(new MouseWheelListener() {
 		    @Override
@@ -323,6 +314,30 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		JViewport roomListViewport = roomListScroll.getViewport();
 		roomListViewport.setBackground(Color.white);
 		roomListViewport.add(totalRoomList);
+		
+		roomListScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		//roomListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		roomListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+		//roomListScroll.getVerticalScrollBar().setEnabled(false);
+		// 컨텐트 패널에 대한 MouseWheelListener를 추가합니다.
+		roomListScroll.getViewport().getView().addMouseWheelListener(new MouseWheelListener() {
+		    @Override
+		    public void mouseWheelMoved(MouseWheelEvent e) {
+		        JViewport viewport = roomListScroll.getViewport();
+		        int scrollAmount = e.getWheelRotation();
+
+		        // 스크롤이 더 이상 올라가지 않도록 조절합니다.
+		        if (scrollAmount < 0 && viewport.getViewPosition().y == 0) {
+		            return; // 컨텐트 패널이 가장 위에 있는 경우, 더 이상 스크롤을 올리지 않습니다.
+		        }
+
+		        // 스크롤 이벤트에 따라 컨텐트 패널을 스크롤하는 코드를 작성합니다.
+		        Point viewPosition = viewport.getViewPosition();
+		        viewPosition.translate(0, scrollAmount * 10); // 스크롤 속도 조정을 위해 값을 조정합니다.
+		        viewport.setViewPosition(viewPosition);
+		    }
+		});
+		
 		
 
 
