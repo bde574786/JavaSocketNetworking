@@ -46,6 +46,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import chatting.Server.RoomInformation;
+
 public class Client extends JFrame implements ActionListener, KeyListener {
 
 	// 메인 패널
@@ -198,7 +200,6 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		bottomPanel.setBounds(127, 384, 273, 98);
 		bottomPanel.setLayout(null);
 		waitingRoomPanel.add(bottomPanel);
-		
 		joinRoomButton = new JButton("Enter Room");
 		joinRoomButton.setBounds(135, 24, 102, 23);
 		joinRoomButton.setBorder(null);
@@ -206,8 +207,6 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		joinRoomButton.setForeground(new Color(90, 90, 90));
 		joinRoomButton.setEnabled(false);
 		bottomPanel.add(joinRoomButton);
-		
-		
 		// userListPanel
 		userListPanel = new JPanel();
 		userListPanel.setBackground(new Color(236, 236, 236));
@@ -216,7 +215,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		waitingRoomPanel.add(userListPanel);
 
 		currentUserLabel = new JLabel();
-		currentUserLabel.setBounds(22, 100, 60, 20);
+		currentUserLabel.setBounds(37, 100, 60, 20);
 		setFont(currentUserLabel, Font.PLAIN, 18f);
 		userListPanel.add(currentUserLabel);
 
@@ -226,18 +225,19 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		totalUserList.setSelectionBackground(null);
 		totalUserList.setSelectionForeground(new Color(150, 150, 150));
 		setFont(totalUserList, Font.PLAIN, 14f);
-		
 		DefaultListCellRenderer renderer = new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                label.setHorizontalAlignment(SwingConstants.LEFT);
-                label.setBorder(new EmptyBorder(10, 0, 10, 10));
-                return label;
-            }
-        };
+			@Override
+			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected,
+						cellHasFocus);
+				label.setHorizontalAlignment(SwingConstants.LEFT);
+				label.setBorder(new EmptyBorder(10, 0, 10, 10));
+				return label;
+			}
+		};
 
-        totalUserList.setCellRenderer(renderer);
+		totalUserList.setCellRenderer(renderer);
 		userListPanel.add(totalUserList);
 
 		userListScroll = new JScrollPane();
@@ -247,41 +247,34 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		JPanel contentPane = new JPanel();
 		JViewport jViewport = new JViewport();
 		jViewport.setView(contentPane);
-		
-		
 		userListScroll.setViewport(jViewport);
 		contentPane.add(totalUserList);
 		userListPanel.add(userListScroll);
-		
 		userListScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		//userListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		// userListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		userListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-		//userListScroll.getVerticalScrollBar().setEnabled(false);
+		// userListScroll.getVerticalScrollBar().setEnabled(false);
 		// 컨텐트 패널에 대한 MouseWheelListener를 추가합니다.
 		userListScroll.getViewport().getView().addMouseWheelListener(new MouseWheelListener() {
-		    @Override
-		    public void mouseWheelMoved(MouseWheelEvent e) {
-		        JViewport viewport = userListScroll.getViewport();
-		        int scrollAmount = e.getWheelRotation();
+			@Override
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				JViewport viewport = userListScroll.getViewport();
+				int scrollAmount = e.getWheelRotation();
 
-		        // 스크롤이 더 이상 올라가지 않도록 조절합니다.
-		        if (scrollAmount < 0 && viewport.getViewPosition().y == 0) {
-		            return; // 컨텐트 패널이 가장 위에 있는 경우, 더 이상 스크롤을 올리지 않습니다.
-		        }
+				// 스크롤이 더 이상 올라가지 않도록 조절합니다.
+				if (scrollAmount < 0 && viewport.getViewPosition().y == 0) {
+					return; // 컨텐트 패널이 가장 위에 있는 경우, 더 이상 스크롤을 올리지 않습니다.
+				}
 
-		        // 스크롤 이벤트에 따라 컨텐트 패널을 스크롤하는 코드를 작성합니다.
-		        Point viewPosition = viewport.getViewPosition();
-		        viewPosition.translate(0, scrollAmount * 10); // 스크롤 속도 조정을 위해 값을 조정합니다.
-		        viewport.setViewPosition(viewPosition);
-		    }
+				// 스크롤 이벤트에 따라 컨텐트 패널을 스크롤하는 코드를 작성합니다.
+				Point viewPosition = viewport.getViewPosition();
+				viewPosition.translate(0, scrollAmount * 10); // 스크롤 속도 조정을 위해 값을 조정합니다.
+				viewport.setViewPosition(viewPosition);
+			}
 		});
-		
-		
-		
-		
-		
+
 		sendNoteButton = new JButton("Send Message");
-		sendNoteButton.setBounds(7,407, 112, 23);
+		sendNoteButton.setBounds(7, 407, 112, 23);
 		sendNoteButton.setBorder(null);
 		sendNoteButton.setBackground(new Color(212, 212, 212));
 		sendNoteButton.setForeground(new Color(90, 90, 90));
@@ -300,7 +293,6 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		totalRoomList.setBorder(null);
 		totalRoomList.setFocusable(false);
 
-
 		totalRoomList.setSelectionBackground(null);
 		totalRoomList.setSelectionForeground(new Color(150, 150, 150));
 		setFont(totalRoomList, Font.PLAIN, 16f);
@@ -314,33 +306,29 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		JViewport roomListViewport = roomListScroll.getViewport();
 		roomListViewport.setBackground(Color.white);
 		roomListViewport.add(totalRoomList);
-		
+
 		roomListScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		//roomListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		// roomListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		roomListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-		//roomListScroll.getVerticalScrollBar().setEnabled(false);
+		// roomListScroll.getVerticalScrollBar().setEnabled(false);
 		// 컨텐트 패널에 대한 MouseWheelListener를 추가합니다.
 		roomListScroll.getViewport().getView().addMouseWheelListener(new MouseWheelListener() {
-		    @Override
-		    public void mouseWheelMoved(MouseWheelEvent e) {
-		        JViewport viewport = roomListScroll.getViewport();
-		        int scrollAmount = e.getWheelRotation();
+			@Override
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				JViewport viewport = roomListScroll.getViewport();
+				int scrollAmount = e.getWheelRotation();
 
-		        // 스크롤이 더 이상 올라가지 않도록 조절합니다.
-		        if (scrollAmount < 0 && viewport.getViewPosition().y == 0) {
-		            return; // 컨텐트 패널이 가장 위에 있는 경우, 더 이상 스크롤을 올리지 않습니다.
-		        }
+				// 스크롤이 더 이상 올라가지 않도록 조절합니다.
+				if (scrollAmount < 0 && viewport.getViewPosition().y == 0) {
+					return; // 컨텐트 패널이 가장 위에 있는 경우, 더 이상 스크롤을 올리지 않습니다.
+				}
 
-		        // 스크롤 이벤트에 따라 컨텐트 패널을 스크롤하는 코드를 작성합니다.
-		        Point viewPosition = viewport.getViewPosition();
-		        viewPosition.translate(0, scrollAmount * 10); // 스크롤 속도 조정을 위해 값을 조정합니다.
-		        viewport.setViewPosition(viewPosition);
-		    }
+				// 스크롤 이벤트에 따라 컨텐트 패널을 스크롤하는 코드를 작성합니다.
+				Point viewPosition = viewport.getViewPosition();
+				viewPosition.translate(0, scrollAmount * 10); // 스크롤 속도 조정을 위해 값을 조정합니다.
+				viewport.setViewPosition(viewPosition);
+			}
 		});
-		
-		
-
-
 
 		createRoomButton = new JButton("+");
 		createRoomButton.setBounds(330, 20, 35, 35);
@@ -613,6 +601,7 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 
 				@Override
 				public void run() {
+
 					while (true) {
 						try {
 							String message = dataInputStream.readUTF();
@@ -632,6 +621,9 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	}
 
 	private void inMessage(String str) {
+		totalUserList.setListData(userVectorList);
+		totalRoomList.setListData(roomVectorList);
+		repaint();
 		StringTokenizer stringTokenizer = new StringTokenizer(str, "/");
 		String protocol = stringTokenizer.nextToken();
 		String message = stringTokenizer.nextToken();
@@ -640,10 +632,11 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			isUserIdvalidationOK = false;
 			connectButton.setEnabled(true);
 			setTitle("이미 사용중인 USER_ID 입니다.");
-
 		} else if (protocol.equals("NewUser")) {
 			userVectorList.add(message);
 			totalUserList.setListData(userVectorList);
+			totalRoomList.setListData(roomVectorList);
+			repaint();
 
 		} else if (protocol.equals("OldUser")) {
 			userVectorList.add(message);
@@ -651,11 +644,13 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		} else if (protocol.equals("NetworkConnected")) {
 			isUserIdvalidationOK = true;
 			if (isUserIdvalidationOK) {
-				setTitle(" Welcome! [ " + userId + " ] in YouChaeTalk!!");
-				switchToTopPanel(waitingRoomPanel);
-				connectButton.setEnabled(false);
 				userVectorList.add(userId);
+				switchToTopPanel(waitingRoomPanel);
+				setTitle(" Welcome! [ " + userId + " ] in YouChaeTalk!!");
 				totalUserList.setListData(userVectorList);
+				totalRoomList.setListData(roomVectorList);
+				repaint();
+				connectButton.setEnabled(false);
 			}
 			createRoomButton.setEnabled(socket.isConnected());
 
@@ -700,6 +695,22 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 
 		} else if (protocol.equals("EmptyRoom")) {
 			roomVectorList.remove(message);
+			totalRoomList.setListData(roomVectorList);
+		} else if (protocol.equals("UserOut")) {
+			userVectorList.remove(message); // message는 나간 userID
+			totalUserList.setListData(userVectorList);
+			totalRoomList.setListData(roomVectorList);
+			sendMessage("UserOutLeaveRoom/"+message);
+			
+		}
+
+		/*
+		 * else if (protocol.equals("ErrorOutRoom")) { for (String roomName :
+		 * myRoomNameList) { sendMessage("LeaveRoomOK/" + roomName); } }
+		 */
+
+		else if (protocol.equals("UserData_Updata")) {
+			totalUserList.setListData(userVectorList);
 			totalRoomList.setListData(roomVectorList);
 		}
 	}

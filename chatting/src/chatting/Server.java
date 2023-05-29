@@ -130,7 +130,7 @@ public class Server extends JFrame implements ActionListener {
 			serverStartButton.setEnabled(false);
 			serverStopButton.setEnabled(true);
 		} catch (Exception e) {
-
+			System.out.println(e);
 		}
 	}
 
@@ -143,6 +143,7 @@ public class Server extends JFrame implements ActionListener {
 
 						socket = serverSocket.accept();
 						UserInformation userInfo = new UserInformation(socket);
+
 						userInfo.start();
 
 					} catch (IOException e) {
@@ -180,6 +181,7 @@ public class Server extends JFrame implements ActionListener {
 				dataOutputStream = new DataOutputStream(outputStream);
 
 				userId = dataInputStream.readUTF();
+
 				for (int j = 0; j < userVectorList.size(); j++) {
 					if (userId.equals(userVectorList.elementAt(j).userId)) {
 
@@ -214,6 +216,8 @@ public class Server extends JFrame implements ActionListener {
 					textArea.append("[ " + userId + " ] userId 중복!\n");
 				}
 
+				broadcast("UserData_Updata/ok");
+
 			} catch (IOException e) {
 				System.out.println(e);
 			}
@@ -221,13 +225,32 @@ public class Server extends JFrame implements ActionListener {
 
 		@Override
 		public void run() {
+			broadcast("UserData_Updata/ok");
 			while (true) {
 				try {
 					String message = dataInputStream.readUTF();
 					textArea.append("[[" + userId + "]]" + message + "\n");
 					inMessage(message);
 				} catch (Exception e) {
-					// TODO: handle exception
+					try {
+					
+						userVectorList.remove(this);
+						userSocket.close();
+
+						// 접속 끊긴 유저가 들어가있던 방 있으면 다 나가기 해주기
+						broadcast("UserOut/" + this.userId);
+						broadcast("UserData_Updata/ok");
+
+						textArea.append(this.userId + " : 사용자접속끊어짐\n");
+						dataOutputStream.close();
+						dataInputStream.close();
+
+						break;
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+
 				}
 
 			}
@@ -289,15 +312,7 @@ public class Server extends JFrame implements ActionListener {
 					}
 
 				}
-			} 
-			/*
-			 * else if (protocol.equals("LeaveRoom")) { for (int i = 0; i <
-			 * roomVectorList.size(); i++) { System.out.println("inMessage");
-			 * RoomInformation roomInfo = roomVectorList.elementAt(i); if
-			 * (roomInfo.roomName.equals(message)) { sendMessage("LeaveRoom/ok"); break; } }
-			 * }
-			 */
-			else if (protocol.equals("LeaveRoomOK")) {
+			} else if (protocol.equals("LeaveRoomOK")) {
 				for (int i = 0; i < roomVectorList.size(); i++) {
 					RoomInformation roomInfo = roomVectorList.elementAt(i);
 					if (roomInfo.roomName.equals(message)) {
@@ -314,6 +329,23 @@ public class Server extends JFrame implements ActionListener {
 					if (roomInfo.roomName.equals(message)) {
 						roomInfo.roomBroadcast("Chatting/" + userId + "/" + msg);
 					}
+				}
+			} else if (protocol.equals("UserOutLeaveRoom")) {
+				if(roomVectorList.size()>0)
+				{
+					for (RoomInformation roomInfo : roomVectorList) {
+						for (UserInformation userInfo : roomInfo.roomUserVectorList) {
+							if(userInfo.userId.equals(message))
+							{
+								roomInfo.removeRoom(userInfo);
+								break;
+							}
+							
+						}
+						
+						
+					}
+					
 				}
 			}
 		}
