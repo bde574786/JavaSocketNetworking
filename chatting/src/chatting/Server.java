@@ -239,19 +239,17 @@ public class Server extends JFrame implements ActionListener {
 						userSocket.close();
 						userVectorList.remove(this);
 						for (RoomInformation roomInfo : roomVectorList) {
-							for (String  myRoom : myRoomVectorList) {
-								if(roomInfo.roomName.equals(myRoom))
-								{
+							for (String myRoom : myRoomVectorList) {
+								if (roomInfo.roomName.equals(myRoom)) {
 									roomInfo.roomUserVectorList.remove(this);
-									//roomInfo.removeRoom(this);
+									// roomInfo.removeRoom(this);
 								}
 							}
 						}
 						// 접속 끊긴 유저가 들어가있던 방 있으면 다 나가기 해주기
 						broadcast("UserOut/" + this.userId);
-						broadcast("UserData_Update/ok");	
-						RemoveEmptyRoom();
-						
+						broadcast("UserData_Update/ok");
+						removeEmptyRoom();
 
 						break;
 					} catch (IOException e1) {
@@ -340,7 +338,7 @@ public class Server extends JFrame implements ActionListener {
 						roomInfo.roomBroadcast("Chatting/" + userId + "/" + msg);
 					}
 				}
-			} 
+			}
 		}
 
 		private void sendMessage(String message) {
@@ -412,18 +410,17 @@ public class Server extends JFrame implements ActionListener {
 			userInfo.sendMessage(string);
 		}
 	}
-	public void RemoveEmptyRoom()
-	{
-		if(roomVectorList.size() !=0)
-		{
-			for (RoomInformation roomInfo : roomVectorList) {
-				if(roomInfo.roomUserVectorList.size()==0)
-				{
-					roomVectorList.remove(roomInfo);
-					broadcast("EmptyRoom/"+roomInfo.roomName);
+
+	public void removeEmptyRoom() {
+		synchronized (roomVectorList) {
+			Iterator<RoomInformation> iterator = roomVectorList.iterator();
+			while (iterator.hasNext()) {
+				RoomInformation roomInfo = iterator.next();
+				if (roomInfo.roomUserVectorList.size() == 0) {
+					iterator.remove();
+					broadcast("EmptyRoom/" + roomInfo.roomName);
 				}
 			}
-			
 		}
 	}
 
