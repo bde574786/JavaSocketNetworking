@@ -250,9 +250,9 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		userListScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		//userListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 		userListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+		//userListScroll.getVerticalScrollBar().setEnabled(false);
 		
 		
-		userListScroll.getVerticalScrollBar().setEnabled(false);
 		userListScroll.setViewport(jViewport);
 		contentPane.add(totalUserList);
 		userListPanel.add(userListScroll);
@@ -270,13 +270,15 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		userListScroll.getViewport().getView().addMouseWheelListener(new MouseWheelListener() {
 		    @Override
 		    public void mouseWheelMoved(MouseWheelEvent e) {
-		        // 마우스 휠 이벤트 처리 로직을 여기에 작성합니다.
-		        // 예: 스크롤을 위로 올리는 경우 -1, 아래로 내리는 경우 1을 반환합니다.
-		        int scrollAmount = e.getWheelRotation();
-		        
-		        // 스크롤 이벤트에 따라 컨텐트 패널을 스크롤하는 코드를 작성합니다.
-		        // 예: 컨텐트 패널을 위로 스크롤하는 경우
 		        JViewport viewport = userListScroll.getViewport();
+		        int scrollAmount = e.getWheelRotation();
+
+		        // 스크롤이 더 이상 올라가지 않도록 조절합니다.
+		        if (scrollAmount < 0 && viewport.getViewPosition().y == 0) {
+		            return; // 컨텐트 패널이 가장 위에 있는 경우, 더 이상 스크롤을 올리지 않습니다.
+		        }
+
+		        // 스크롤 이벤트에 따라 컨텐트 패널을 스크롤하는 코드를 작성합니다.
 		        Point viewPosition = viewport.getViewPosition();
 		        viewPosition.translate(0, scrollAmount * 10); // 스크롤 속도 조정을 위해 값을 조정합니다.
 		        viewport.setViewPosition(viewPosition);
