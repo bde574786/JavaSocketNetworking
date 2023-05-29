@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -62,12 +63,13 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 	private JButton connectButton;
 
 	private JPanel waitingRoomPanel;
+	private JScrollPane roomListScroll;
 	private JPanel userListPanel;
+	private JPanel bottomPanel;
 	private JLabel currentUserLabel;
 	private JList totalUserList; // 전체접속자 리스트
 	private JScrollPane userListScroll;
 	private JLabel totalRoomLabel;
-	private JScrollPane roomListScroll;
 	private JList totalRoomList; // 방 리스트
 	private JButton sendNoteButton;
 	private JButton joinRoomButton;
@@ -190,6 +192,23 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		waitingRoomPanel.setBackground(new Color(255, 255, 255));
 		waitingRoomPanel.setBounds(0, 0, 400, 482);
 
+		// bottomPanel
+		bottomPanel = new JPanel();
+		bottomPanel.setBackground(new Color(249, 249, 249));
+		bottomPanel.setBounds(127, 384, 273, 98);
+		bottomPanel.setLayout(null);
+		waitingRoomPanel.add(bottomPanel);
+		
+		joinRoomButton = new JButton("Enter Room");
+		joinRoomButton.setBounds(135, 24, 102, 23);
+		joinRoomButton.setBorder(null);
+		joinRoomButton.setBackground(new Color(212, 212, 212));
+		joinRoomButton.setForeground(new Color(90, 90, 90));
+		joinRoomButton.setEnabled(false);
+		bottomPanel.add(joinRoomButton);
+		
+		
+		// userListPanel
 		userListPanel = new JPanel();
 		userListPanel.setBackground(new Color(236, 236, 236));
 		userListPanel.setBounds(0, 0, 127, 480);
@@ -197,21 +216,23 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		waitingRoomPanel.add(userListPanel);
 
 		currentUserLabel = new JLabel();
-		currentUserLabel.setBounds(40, 100, 60, 20);
-		setFont(currentUserLabel, Font.BOLD, 19f);
+		currentUserLabel.setBounds(22, 100, 60, 20);
+		setFont(currentUserLabel, Font.PLAIN, 18f);
 		userListPanel.add(currentUserLabel);
 
 		totalUserList = new JList();
 		totalUserList.setBounds(0, 0, 90, 257);
 		totalUserList.setBackground(new Color(236, 236, 236));
-		setFont(totalUserList, Font.PLAIN, 16f);
+		totalUserList.setSelectionBackground(null);
+		totalUserList.setSelectionForeground(new Color(150, 150, 150));
+		setFont(totalUserList, Font.PLAIN, 14f);
 		
 		DefaultListCellRenderer renderer = new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 label.setHorizontalAlignment(SwingConstants.LEFT);
-                label.setBorder(new EmptyBorder(10, 15, 10, 10));
+                label.setBorder(new EmptyBorder(10, 0, 10, 10));
                 return label;
             }
         };
@@ -220,24 +241,59 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		userListPanel.add(totalUserList);
 
 		userListScroll = new JScrollPane();
-		userListScroll.setBounds(20, 160, 90, 200);
+		userListScroll.setBounds(7, 130, 90, 250);
 		userListScroll.setBorder(null);
 		userListScroll.setBackground(Color.white);
 		JPanel contentPane = new JPanel();
 		JViewport jViewport = new JViewport();
 		jViewport.setView(contentPane);
 		userListScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		userListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		//userListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+		userListScroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+		
+		
+		userListScroll.getVerticalScrollBar().setEnabled(false);
 		userListScroll.setViewport(jViewport);
 		contentPane.add(totalUserList);
 		userListPanel.add(userListScroll);
 		
+		/*
+		 * roomListScroll.addMouseWheelListener(new MouseWheelListener() {
+		 * 
+		 * @Override public void mouseWheelMoved(MouseWheelEvent e) { JScrollBar
+		 * verticalScrollBar = roomListScroll.getVerticalScrollBar();
+		 * verticalScrollBar.setValue(verticalScrollBar.getValue() -
+		 * e.getWheelRotation() * verticalScrollBar.getUnitIncrement()*100); } });
+		 */
 		
-		sendNoteButton = new JButton("쪽지보내기");
-		sendNoteButton.setBounds(29, 395, 102, 23);
-		sendNoteButton.setBackground(new Color(255, 223, 136));
-		sendNoteButton.setForeground(new Color(15, 64, 41));
-		// waitingRoomPanel.add(sendNoteButton);
+		// 컨텐트 패널에 대한 MouseWheelListener를 추가합니다.
+		userListScroll.getViewport().getView().addMouseWheelListener(new MouseWheelListener() {
+		    @Override
+		    public void mouseWheelMoved(MouseWheelEvent e) {
+		        // 마우스 휠 이벤트 처리 로직을 여기에 작성합니다.
+		        // 예: 스크롤을 위로 올리는 경우 -1, 아래로 내리는 경우 1을 반환합니다.
+		        int scrollAmount = e.getWheelRotation();
+		        
+		        // 스크롤 이벤트에 따라 컨텐트 패널을 스크롤하는 코드를 작성합니다.
+		        // 예: 컨텐트 패널을 위로 스크롤하는 경우
+		        JViewport viewport = userListScroll.getViewport();
+		        Point viewPosition = viewport.getViewPosition();
+		        viewPosition.translate(0, scrollAmount * 10); // 스크롤 속도 조정을 위해 값을 조정합니다.
+		        viewport.setViewPosition(viewPosition);
+		    }
+		});
+		
+		
+		
+		
+		
+		sendNoteButton = new JButton("Send Message");
+		sendNoteButton.setBounds(7,407, 112, 23);
+		sendNoteButton.setBorder(null);
+		sendNoteButton.setBackground(new Color(212, 212, 212));
+		sendNoteButton.setForeground(new Color(90, 90, 90));
+		setFont(sendNoteButton, Font.PLAIN, 14f);
+		userListPanel.add(sendNoteButton);
 
 		totalRoomLabel = new JLabel("채팅");
 		totalRoomLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -248,6 +304,12 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		totalRoomList = new JList();
 		totalRoomList.setBackground(Color.white);
 		totalRoomList.setBounds(0, 0, 200, 257);
+		totalRoomList.setBorder(null);
+		totalRoomList.setFocusable(false);
+
+
+		totalRoomList.setSelectionBackground(null);
+		totalRoomList.setSelectionForeground(new Color(150, 150, 150));
 		setFont(totalRoomList, Font.PLAIN, 16f);
 
 		roomListScroll = new JScrollPane();
@@ -255,25 +317,13 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 		roomListScroll.setBackground(Color.white);
 		roomListScroll.setBorder(null);
 		waitingRoomPanel.add(roomListScroll);
-		roomListScroll.addMouseWheelListener(new MouseWheelListener() {
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                JScrollBar verticalScrollBar = roomListScroll.getVerticalScrollBar();
-                verticalScrollBar.setValue(verticalScrollBar.getValue() - e.getWheelRotation() * verticalScrollBar.getUnitIncrement()*3);
-            }
-        });
-		
+
 		JViewport roomListViewport = roomListScroll.getViewport();
 		roomListViewport.setBackground(Color.white);
 		roomListViewport.add(totalRoomList);
 		
 
-		joinRoomButton = new JButton("채팅방참여");
-		joinRoomButton.setBounds(180, 395, 102, 23);
-		joinRoomButton.setBackground(new Color(255, 223, 136));
-		joinRoomButton.setForeground(new Color(15, 64, 41));
-		joinRoomButton.setEnabled(false);
-		// waitingRoomPanel.add(joinRoomButton);
+
 
 		createRoomButton = new JButton("+");
 		createRoomButton.setBounds(330, 20, 35, 35);
