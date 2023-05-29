@@ -697,19 +697,9 @@ public class Client extends JFrame implements ActionListener, KeyListener {
 			roomVectorList.remove(message);
 			totalRoomList.setListData(roomVectorList);
 		} else if (protocol.equals("UserOut")) {
-			userVectorList.remove(message); // message는 나간 userID
-			totalUserList.setListData(userVectorList);
-			totalRoomList.setListData(roomVectorList);
-			sendMessage("UserOutLeaveRoom/"+message);
-			
+			userVectorList.remove(message); // message는 나간 userID	
 		}
-
-		/*
-		 * else if (protocol.equals("ErrorOutRoom")) { for (String roomName :
-		 * myRoomNameList) { sendMessage("LeaveRoomOK/" + roomName); } }
-		 */
-
-		else if (protocol.equals("UserData_Updata")) {
+		else if (protocol.equals("UserData_Update")) {
 			totalUserList.setListData(userVectorList);
 			totalRoomList.setListData(roomVectorList);
 		}
